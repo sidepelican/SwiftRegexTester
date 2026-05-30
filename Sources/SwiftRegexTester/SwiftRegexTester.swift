@@ -1,103 +1,84 @@
 import JavaScriptKit
 
+// MARK: - Supporting value types
+
+@JS struct CaptureGroup {
+    var value: String
+    var start: Int
+    var end: Int
+}
+
+@JS struct RegexMatch {
+    var value: String
+    var start: Int
+    var end: Int
+    var groups: [CaptureGroup]
+}
+
 // MARK: - Exported class
 
+/// Holds a compiled `Regex`. Created by `createRegex(pattern:)`.
 @JS final class SwiftRegex {
-    let _regex: Regex<AnyRegexOutput>?
-    let _error: String?
+    var _regex: Regex<AnyRegexOutput>?
 
-    @JS init(pattern: String) {
-        do {
-            _regex = try Regex(pattern)
-            _error = nil
-        } catch {
-            _regex = nil
-            _error = "\(error)"
-        }
-    }
+    /// Dummy initializer required by BridgeJS. Use `createRegex(pattern:)` instead.
+    @JS init() { _regex = nil }
 
-    @JS func isValid() -> Bool {
-        _error == nil
-    }
+    init(_ regex: Regex<AnyRegexOutput>) { _regex = regex }
+}
 
-    @JS func errorMessage() -> String {
-        _error ?? ""
-    }
+// MARK: - Result enums
+
+@JS enum RegexCompileResult {
+    case success(SwiftRegex)
+    case failure(String)
+}
+
+@JS enum RegexTestResult {
+    case success([RegexMatch])
+    case failure(String)
 }
 
 // MARK: - Exported functions
 
-/// Compile a regex pattern and return a SwiftRegex object.
-@JS func createRegex(pattern: String) -> SwiftRegex {
-    SwiftRegex(pattern: pattern)
+/// Compile a regex pattern. Returns `.success` with a `SwiftRegex` or `.failure` with an error message.
+@JS func createRegex(pattern: String) -> RegexCompileResult {
+    do {
+        return .success(SwiftRegex(try Regex(pattern)))
+    } catch {
+        return .failure("\(error)")
+    }
 }
 
-/// Run all matches of the regex against `input` and return a JSON string.
-///
-/// Success: `{"matches":[{"value":"…","start":N,"end":N,"groups":[…]},…]}`
-/// Error:   `{"error":"…"}`
-@JS func testRegex(regex: SwiftRegex, input: String) -> String {
+/// Run all matches of `regex` against `input`.
+/// Returns `.success` with an array of `RegexMatch`, or `.failure` with an error message.
+@JS func testRegex(regex: SwiftRegex, input: String) -> RegexTestResult {
     guard let r = regex._regex else {
-        return "{\"error\":\(jsonEscape(regex._error ?? ""))}"
+        return .failure("Regex is not compiled")
     }
 
-    let matches = input.matches(of: r)
-
-    var matchParts: [String] = []
-    for match in matches {
+    var matches: [RegexMatch] = []
+    for match in input.matches(of: r) {
         let value = String(input[match.range])
         let start = input.distance(from: input.startIndex, to: match.range.lowerBound)
         let end   = input.distance(from: input.startIndex, to: match.range.upperBound)
 
-        // Capture groups: output[0] is the whole match, output[1…] are groups
+        var groups: [CaptureGroup] = []
         let output = match.output
-        var groupParts: [String] = []
         if output.count > 1 {
             for i in 1..<output.count {
                 if let sub = output[i].value as? Substring {
                     let gStart = input.distance(from: input.startIndex, to: sub.startIndex)
                     let gEnd   = input.distance(from: input.startIndex, to: sub.endIndex)
-                    groupParts.append("{\"value\":\(jsonEscape(String(sub))),\"start\":\(gStart),\"end\":\(gEnd)}")
-                } else {
-                    groupParts.append("null")
+                    groups.append(CaptureGroup(value: String(sub), start: gStart, end: gEnd))
                 }
             }
         }
 
-        let groups = "[" + groupParts.joined(separator: ",") + "]"
-        matchParts.append(
-            "{\"value\":\(jsonEscape(value)),\"start\":\(start),\"end\":\(end),\"groups\":\(groups)}"
-        )
+        matches.append(RegexMatch(value: value, start: start, end: end, groups: groups))
     }
 
-    return "{\"matches\":[\(matchParts.joined(separator: ","))]}"
-}
-
-// MARK: - Helpers
-
-private func jsonEscape(_ s: String) -> String {
-    var result = "\""
-    for scalar in s.unicodeScalars {
-        switch scalar.value {
-        case 0x22: result += "\\\""
-        case 0x5C: result += "\\\\"
-        case 0x0A: result += "\\n"
-        case 0x0D: result += "\\r"
-        case 0x09: result += "\\t"
-        case 0x08: result += "\\b"
-        case 0x0C: result += "\\f"
-        default:
-            if scalar.value < 0x20 {
-                let hex = String(scalar.value, radix: 16)
-                let padded = String(repeating: "0", count: 4 - hex.count) + hex
-                result += "\\u\(padded)"
-            } else {
-                result.unicodeScalars.append(scalar)
-            }
-        }
-    }
-    result += "\""
-    return result
+    return .success(matches)
 }
 
 // MARK: - Entry point

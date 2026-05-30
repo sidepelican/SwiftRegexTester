@@ -28,13 +28,15 @@ app.innerHTML = `
 `
 
 // ── State ─────────────────────────────────────────────────────────────────────
-const patternEl     = document.querySelector('#pattern')
-const teststrEl     = document.querySelector('#teststr')
-const patternError  = document.querySelector('#pattern-error')
-const highlightedEl = document.querySelector('#highlighted')
+const patternEl      = document.querySelector('#pattern')
+const teststrEl      = document.querySelector('#teststr')
+const patternError   = document.querySelector('#pattern-error')
+const highlightedEl  = document.querySelector('#highlighted')
 const matchDetailsEl = document.querySelector('#match-details')
 
 let swiftExports = null
+let RegexCompileResultValues = null
+let RegexTestResultValues    = null
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 function escapeHtml(text) {
@@ -49,10 +51,8 @@ function render() {
   const pattern = patternEl.value
   const input   = teststrEl.value
 
-  // No exports yet
   if (!swiftExports) return
 
-  // Empty pattern — show plain text
   if (!pattern) {
     patternError.textContent = ''
     highlightedEl.textContent = input
@@ -60,17 +60,18 @@ function render() {
     return
   }
 
-  const regex = swiftExports.createRegex(pattern)
+  // ── Compile the pattern ───────────────────────────────────────────────────
+  const compileResult = swiftExports.createRegex(pattern)
 
-  // Invalid pattern
-  if (!regex.isValid()) {
-    patternError.textContent = regex.errorMessage()
+  if (compileResult.tag !== RegexCompileResultValues.Tag.Success) {
+    patternError.textContent = compileResult.param0   // error string
     highlightedEl.textContent = input
     matchDetailsEl.innerHTML = ''
     return
   }
 
   patternError.textContent = ''
+  const regex = compileResult.param0   // SwiftRegex instance
 
   if (!input) {
     highlightedEl.textContent = ''
@@ -78,17 +79,18 @@ function render() {
     return
   }
 
-  const { matches, error } = JSON.parse(swiftExports.testRegex(regex, input))
+  // ── Run matches ───────────────────────────────────────────────────────────
+  const testResult = swiftExports.testRegex(regex, input)
 
-  if (error) {
-    patternError.textContent = error
+  if (testResult.tag !== RegexTestResultValues.Tag.Success) {
     highlightedEl.textContent = input
     matchDetailsEl.innerHTML = ''
     return
   }
 
+  const matches = testResult.param0   // RegexMatch[]
+
   // ── Highlighted view ───────────────────────────────────────────────────────
-  // Work in Unicode code-point array so indices align with Swift's character indices
   const chars = [...input]
   let html = ''
   let pos  = 0
@@ -115,12 +117,8 @@ function render() {
     if (m.groups.length > 0) {
       details += '<ul class="groups">'
       m.groups.forEach((g, i) => {
-        if (g) {
-          details += `<li>グループ ${i + 1}: <code>${escapeHtml(g.value)}</code>`
-                   + ` <span class="range">[${g.start}…${g.end}]</span></li>`
-        } else {
-          details += `<li>グループ ${i + 1}: <em class="dimmed">キャプチャなし</em></li>`
-        }
+        details += `<li>グループ ${i + 1}: <code>${escapeHtml(g.value)}</code>`
+                 + ` <span class="range">[${g.start}…${g.end}]</span></li>`
       })
       details += '</ul>'
     }
@@ -134,9 +132,16 @@ function render() {
 highlightedEl.innerHTML = '<span class="loading">WebAssembly を読み込み中…</span>'
 
 try {
-  const { init } = await import(/* @vite-ignore */ '/wasm/index.js')
+  const [{ init }, bridgeJS] = await Promise.all([
+    import(/* @vite-ignore */ '/wasm/index.js'),
+    import(/* @vite-ignore */ '/wasm/bridge-js.js'),
+  ])
   const { exports } = await init({})
-  swiftExports = exports
+
+  swiftExports             = exports
+  RegexCompileResultValues = bridgeJS.RegexCompileResultValues
+  RegexTestResultValues    = bridgeJS.RegexTestResultValues
+
   highlightedEl.textContent = ''
   render()
 } catch (error) {

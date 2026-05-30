@@ -12,22 +12,217 @@
 body {
   margin: 0;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
+  background: color-mix(in srgb, Canvas 94%, CanvasText);
+  color: CanvasText;
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+
+header {
+  max-width: 64rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  letter-spacing: -0.02em;
+}
+
+header p {
+  margin: 0.25rem 0 0;
+  color: color-mix(in srgb, CanvasText 55%, transparent);
+  font-size: 0.9rem;
 }
 
 main {
-  width: min(42rem, 100%);
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  border-radius: 1rem;
-  padding: 2rem;
+  max-width: 64rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
 }
 
-pre {
-  margin: 0;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  overflow-x: auto;
+@media (min-width: 700px) {
+  main {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .results {
+    grid-column: 1 / -1;
+  }
 }
+
+/* ── Form fields ─────────────────────────────────────────────── */
+
+.inputs {
+  display: contents; /* let children participate in main grid */
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+input[type='text'],
+textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+  border-radius: 0.5rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.9rem;
+  background: Canvas;
+  color: CanvasText;
+  transition: border-color 0.15s, outline 0.15s;
+  resize: vertical;
+}
+
+input[type='text']:focus,
+textarea:focus {
+  outline: 2px solid #4a90d9;
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.field-error {
+  min-height: 1.2rem;
+  font-size: 0.8rem;
+  color: #c0392b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .field-error {
+    color: #fc8181;
+  }
+}
+
+/* ── Results section ─────────────────────────────────────────── */
+
+.results h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, CanvasText 60%, transparent);
+}
+
+.highlighted-text {
+  padding: 0.75rem 1rem;
+  background: Canvas;
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  border-radius: 0.5rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 3rem;
+  line-height: 1.7;
+}
+
+mark {
+  background: #fbd38d;
+  color: #7b3f00;
+  border-radius: 3px;
+  padding: 0.05em 0.15em;
+}
+
+@media (prefers-color-scheme: dark) {
+  mark {
+    background: #744210;
+    color: #fbd38d;
+  }
+}
+
+.loading,
+.load-error,
+.placeholder {
+  color: color-mix(in srgb, CanvasText 45%, transparent);
+  font-style: italic;
+}
+
+.load-error {
+  font-family: inherit;
+  font-style: normal;
+}
+
+/* ── Match details ───────────────────────────────────────────── */
+
+.match-details {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.no-match {
+  margin: 0;
+  color: color-mix(in srgb, CanvasText 50%, transparent);
+}
+
+.match-count {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  color: #276749;
+}
+
+@media (prefers-color-scheme: dark) {
+  .match-count {
+    color: #68d391;
+  }
+}
+
+.match-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.match-list li {
+  line-height: 1.6;
+}
+
+code {
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.85em;
+}
+
+.match-value {
+  background: color-mix(in srgb, CanvasText 9%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+.range {
+  color: color-mix(in srgb, CanvasText 45%, transparent);
+  font-size: 0.78rem;
+}
+
+.groups {
+  margin: 0.2rem 0 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  list-style: disc;
+  color: color-mix(in srgb, CanvasText 70%, transparent);
+}
+
+.groups code {
+  background: color-mix(in srgb, CanvasText 7%, transparent);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+.dimmed {
+  color: color-mix(in srgb, CanvasText 40%, transparent);
+}
+

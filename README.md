@@ -1,15 +1,14 @@
 # SwiftRegexTester
 
-Swift標準ライブラリのRegex機能をブラウザから試すための、Swift/Wasm + BridgeJSベースの最小構成です。
+Swift標準ライブラリのRegex機能をブラウザから試すための、Swift/Wasm + Vite 構成です。
 
 ## 含まれているもの
 
 - `./.codex/skills/`: `swiftwasm/Swift-Wasm-Agent-Skill` から導入したスキル
 - `./.github/workflows/copilot-setup-steps.yml`: Copilot Cloud Agent向けのNode.js + Swift Wasm SDKセットアップ
 - `Package.swift`: JavaScriptKit / BridgeJS を使う SwiftPM 設定
-- `Makefile`: ネイティブテスト・Wasmビルド・静的配信用アセット配置
-- `index.html`: `./wasm` 配下のビルド成果物を読み込んで `hello()` を表示する静的ページ
-- `vendor/browser_wasi_shim/`: ブラウザ用WASIランタイムのローカル配信用ファイル
+- `Makefile`: ネイティブテスト・Wasmビルド
+- `src/main.js`: Swift/Wasm で公開された `hello()` を呼び出して表示する Vite エントリ
 
 ## セットアップ
 
@@ -38,16 +37,22 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    make test
    ```
 
-4. Wasm 向けにビルドし、静的配信用の `./wasm` へ配置します。
+4. Vite の依存関係をインストールします。
+
+   ```bash
+   npm install
+   ```
+
+5. Wasm 向けにビルドし、Vite が配信する `./public/wasm` へ配置します。
 
    ```bash
    make build-web SWIFT_SDK_ID="<swift-sdk-id>"
    ```
 
-5. ルートディレクトリを静的配信します。
+6. Vite 開発サーバーを起動します。
 
    ```bash
-   make serve
+   npm run dev
    ```
 
-6. `http://localhost:8000` を開くと、Swift の `hello()` が返す文字列を確認できます。
+7. `http://localhost:5173` を開くと、Swift の `hello()` が返す文字列を確認できます。

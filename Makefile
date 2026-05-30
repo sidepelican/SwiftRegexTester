@@ -11,12 +11,12 @@ build:
 
 build-web:
 	swift package --swift-sdk "$(SWIFT_SDK_ID)" js
-	rm -rf wasm
-	mkdir -p wasm
-	cp -R "$(WASM_OUTPUT_DIR)"/. wasm/
+	rm -rf public/wasm
+	mkdir -p public/wasm
+	cp -R "$(WASM_OUTPUT_DIR)"/. public/wasm/
 
 serve:
-	python3 -m http.server 8000
+	npm run dev
 
 clean-web:
-	rm -rf wasm
+	rm -rf public/wasm

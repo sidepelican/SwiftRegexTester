@@ -1,63 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SwiftRegexTester</title>
-  <style>
-    :root {
-      color-scheme: light dark;
-      font-family: system-ui, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: canvas;
-      color: canvastext;
-    }
-
-    main {
-      width: min(42rem, calc(100vw - 2rem));
-      padding: 2rem;
-      border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-      border-radius: 1rem;
-    }
-
-    pre {
-      padding: 1rem;
-      border-radius: 0.75rem;
-      background: color-mix(in srgb, currentColor 8%, transparent);
-      overflow: auto;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>SwiftRegexTester</h1>
-    <p>Swift/Wasm + BridgeJSの疎通確認用ページです。</p>
-    <pre id="output">Loading WebAssembly…</pre>
-  </main>
-  <script type="importmap">
-    {
-      "imports": {
-        "@bjorn3/browser_wasi_shim": "./vendor/browser_wasi_shim/dist/index.js"
-      }
-    }
-  </script>
-  <script type="module">
-    const output = document.getElementById("output");
-
-    try {
-      const { init } = await import("./wasm/index.js");
-      const { exports } = await init({});
-      output.textContent = exports.hello();
-    } catch (error) {
-      output.textContent = `Failed to load Swift/Wasm output.\n\n${error}`;
-      console.error(error);
-    }
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftRegexTester</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

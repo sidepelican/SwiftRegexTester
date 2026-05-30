@@ -43,13 +43,13 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    npm install
    ```
 
-5. Wasm 向けにビルドし、Vite / Cloudflare Pages が配信する `./public/wasm` へ配置します。
+5. Wasm 向けにビルドし、Vite が配信する `./public/wasm` へ配置します。
 
    ```bash
    make build-web SWIFT_SDK_ID="<swift-sdk-id>"
    ```
 
-   `public/wasm` は Cloudflare Pages に含める配布物です。Swift 側を変更したら、この手順を再実行して生成された `public/wasm` の差分も一緒にコミットしてください。
+   `public/wasm` はローカル確認や CI ビルド用の中間生成物で、Git にはコミットしません。
 
 6. Vite 開発サーバーを起動します。
 
@@ -61,10 +61,14 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
 
 ## Cloudflare Pages へのデプロイ
 
-Cloudflare Pages のビルド環境では Swift/Wasm をその場で生成しないため、デプロイ時はリポジトリに含まれる `public/wasm` がそのまま `dist/wasm` へコピーされます。
+`main` へ push すると GitHub Actions の `Deploy Pages Branch` が次を実行します。
 
-そのため、Pages へデプロイする前に次を満たしてください。
+1. Swift WebAssembly SDK をインストール
+2. `make test`
+3. `make build-web`
+4. `npm run build`
+5. 生成された `dist/` を `deploy` ブランチへ force-push
 
-1. `make build-web SWIFT_SDK_ID="<swift-sdk-id>"` を実行済みであること
-2. 生成された `public/wasm` をコミット済みであること
-3. その状態で `npm run build` を実行し、`dist/wasm/index.js` が含まれること
+Cloudflare Pages 側では、ビルド元ブランチを `deploy` に設定してください。`deploy` ブランチにはビルド済みの静的ファイルだけが置かれる想定です。
+
+この方式では、Swift/Wasm の生成物を `main` ブランチへコミットする必要はありません。

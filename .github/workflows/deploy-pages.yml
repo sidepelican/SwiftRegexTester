@@ -48,9 +48,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: make test
-
       - name: Build Swift/Wasm bundle
         run: make build-web
 

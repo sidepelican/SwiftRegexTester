@@ -10,7 +10,7 @@ build:
 	swift build
 
 build-web:
-	swift package --swift-sdk "$(SWIFT_SDK_ID)" js
+	swift package --swift-sdk "$(SWIFT_SDK_ID)" js --use-cdn
 	rm -rf public/wasm
 	mkdir -p public/wasm
 	cp -R "$(WASM_OUTPUT_DIR)"/. public/wasm/

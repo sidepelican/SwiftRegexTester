@@ -49,6 +49,8 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    make build-web SWIFT_SDK_ID="<swift-sdk-id>"
    ```
 
+   このビルドでは、静的配信環境でも読み込めるように WASI shim を CDN URL 参照で出力します。
+
    `public/wasm` はローカル確認や CI ビルド用の中間生成物で、Git にはコミットしません。
 
 6. Vite 開発サーバーを起動します。

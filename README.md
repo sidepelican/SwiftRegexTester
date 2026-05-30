@@ -17,7 +17,7 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
 
    ```bash
    cd <project-directory>
-   version="$(swift --version | sed -n 's/^Swift version \\([0-9.]*\\).*/\\1/p')"
+   version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
    tag="swift-${version}-RELEASE"
    url="https://download.swift.org/swift-${version}-release/wasm-sdk/${tag}/${tag}_wasm.artifactbundle.tar.gz"
    archive="$(mktemp)"

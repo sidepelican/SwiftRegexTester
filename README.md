@@ -43,11 +43,13 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    npm install
    ```
 
-5. Wasm 向けにビルドし、Vite が配信する `./public/wasm` へ配置します。
+5. Wasm 向けにビルドし、Vite / Cloudflare Pages が配信する `./public/wasm` へ配置します。
 
    ```bash
    make build-web SWIFT_SDK_ID="<swift-sdk-id>"
    ```
+
+   `public/wasm` は Cloudflare Pages に含める配布物です。Swift 側を変更したら、この手順を再実行して生成された `public/wasm` の差分も一緒にコミットしてください。
 
 6. Vite 開発サーバーを起動します。
 
@@ -56,3 +58,13 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    ```
 
 7. `http://localhost:5173` を開くと、Swift の `hello()` が返す文字列を確認できます。
+
+## Cloudflare Pages へのデプロイ
+
+Cloudflare Pages のビルド環境では Swift/Wasm をその場で生成しないため、デプロイ時はリポジトリに含まれる `public/wasm` がそのまま `dist/wasm` へコピーされます。
+
+そのため、Pages へデプロイする前に次を満たしてください。
+
+1. `make build-web SWIFT_SDK_ID="<swift-sdk-id>"` を実行済みであること
+2. 生成された `public/wasm` をコミット済みであること
+3. その状態で `npm run build` を実行し、`dist/wasm/index.js` が含まれること

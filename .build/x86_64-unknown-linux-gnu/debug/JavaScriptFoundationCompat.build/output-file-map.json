@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptFoundationCompat.build/primary.swiftdeps"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptFoundationCompat/Data+JSValue.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptFoundationCompat.build/Data+JSValue.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptFoundationCompat.build/Data+JSValue.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptFoundationCompat.build/Data+JSValue~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptFoundationCompat.build/Data+JSValue.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptFoundationCompat.build/Data+JSValue.dia"
+  }
+}

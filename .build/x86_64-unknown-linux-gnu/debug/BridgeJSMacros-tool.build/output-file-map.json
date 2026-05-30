@@ -1,0 +1,47 @@
+{
+  "": {
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/primary.swiftdeps"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/BridgeJSMacros/BridgeJSMacrosPlugin.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/BridgeJSMacrosPlugin.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/BridgeJSMacrosPlugin.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/BridgeJSMacrosPlugin~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/BridgeJSMacrosPlugin.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/BridgeJSMacrosPlugin.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/BridgeJSMacros/JSClassMacro.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSClassMacro.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSClassMacro.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSClassMacro~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSClassMacro.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSClassMacro.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/BridgeJSMacros/JSFunctionMacro.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSFunctionMacro.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSFunctionMacro.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSFunctionMacro~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSFunctionMacro.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSFunctionMacro.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/BridgeJSMacros/JSGetterMacro.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSGetterMacro.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSGetterMacro.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSGetterMacro~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSGetterMacro.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSGetterMacro.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/BridgeJSMacros/JSMacroSupport.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSMacroSupport.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSMacroSupport.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSMacroSupport~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSMacroSupport.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSMacroSupport.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/BridgeJSMacros/JSSetterMacro.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSSetterMacro.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSSetterMacro.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSSetterMacro~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSSetterMacro.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/BridgeJSMacros-tool.build/JSSetterMacro.dia"
+  }
+}

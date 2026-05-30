@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/primary.swiftdeps"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/Sources/SwiftRegexTester/SwiftRegexTester.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/SwiftRegexTester.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/SwiftRegexTester.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/SwiftRegexTester~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/SwiftRegexTester.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/SwiftRegexTester.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/plugins/outputs/swiftregextester/SwiftRegexTester/destination/BridgeJS/BridgeJS.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/BridgeJS.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/BridgeJS.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/BridgeJS~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/BridgeJS.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/SwiftRegexTester.build/BridgeJS.dia"
+  }
+}

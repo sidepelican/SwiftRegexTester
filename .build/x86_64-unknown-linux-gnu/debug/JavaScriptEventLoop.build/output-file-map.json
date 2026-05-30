@@ -1,0 +1,61 @@
+{
+  "": {
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/primary.swiftdeps"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/JSRemote.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSRemote.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSRemote.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSRemote~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSRemote.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSRemote.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/JSSending.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSSending.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSSending.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSSending~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSSending.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JSSending.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/JavaScriptEventLoop+ExecutorFactory.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+ExecutorFactory.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+ExecutorFactory.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+ExecutorFactory~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+ExecutorFactory.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+ExecutorFactory.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/JavaScriptEventLoop+LegacyHooks.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+LegacyHooks.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+LegacyHooks.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+LegacyHooks~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+LegacyHooks.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop+LegacyHooks.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/JavaScriptEventLoop.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JavaScriptEventLoop.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/JobQueue.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JobQueue.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JobQueue.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JobQueue~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JobQueue.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/JobQueue.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/WebWorkerDedicatedExecutor.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerDedicatedExecutor.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerDedicatedExecutor.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerDedicatedExecutor~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerDedicatedExecutor.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerDedicatedExecutor.dia"
+  },
+  "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/JavaScriptEventLoop/WebWorkerTaskExecutor.swift": {
+    "dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerTaskExecutor.d",
+    "object": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerTaskExecutor.swift.o",
+    "swiftmodule": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerTaskExecutor~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerTaskExecutor.swiftdeps",
+    "diagnostics": "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoop.build/WebWorkerTaskExecutor.dia"
+  }
+}

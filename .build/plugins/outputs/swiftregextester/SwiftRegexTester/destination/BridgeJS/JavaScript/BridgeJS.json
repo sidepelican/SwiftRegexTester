@@ -1,0 +1,40 @@
+{
+  "exported" : {
+    "classes" : [
+
+    ],
+    "enums" : [
+
+    ],
+    "exposeToGlobal" : false,
+    "functions" : [
+      {
+        "abiName" : "bjs_hello",
+        "effects" : {
+          "isAsync" : false,
+          "isStatic" : false,
+          "isThrows" : false
+        },
+        "name" : "hello",
+        "parameters" : [
+
+        ],
+        "returnType" : {
+          "string" : {
+
+          }
+        }
+      }
+    ],
+    "protocols" : [
+
+    ],
+    "structs" : [
+
+    ]
+  },
+  "moduleName" : "SwiftRegexTester",
+  "usedExternalModules" : [
+
+  ]
+}

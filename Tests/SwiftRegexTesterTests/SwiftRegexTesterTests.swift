@@ -1,40 +1,62 @@
 import Testing
 @testable import SwiftRegexTester
 
-@Test func createRegexValid() {
-    let regex = createRegex(pattern: "\\d+")
-    #expect(regex.isValid() == true)
-    #expect(regex.errorMessage() == "")
+@Test func createRegexValid() throws {
+    let result = createRegex(pattern: "\\d+")
+    guard case .success(let regex) = result else {
+        Issue.record("Expected .success, got \(result)"); return
+    }
+    #expect(regex._regex != nil)
 }
 
-@Test func createRegexInvalid() {
-    let regex = createRegex(pattern: "[invalid")
-    #expect(regex.isValid() == false)
-    #expect(!regex.errorMessage().isEmpty)
+@Test func createRegexInvalid() throws {
+    let result = createRegex(pattern: "[invalid")
+    guard case .failure(let msg) = result else {
+        Issue.record("Expected .failure, got \(result)"); return
+    }
+    #expect(!msg.isEmpty)
 }
 
-@Test func testRegexMatches() {
-    let regex = createRegex(pattern: "\\d+")
-    let result = testRegex(regex: regex, input: "abc 123 def 456")
-    #expect(result.contains("\"123\""))
-    #expect(result.contains("\"456\""))
+@Test func testRegexMatches() throws {
+    guard case .success(let regex) = createRegex(pattern: "\\d+") else {
+        Issue.record("Pattern did not compile"); return
+    }
+    guard case .success(let matches) = testRegex(regex: regex, input: "abc 123 def 456") else {
+        Issue.record("Expected .success from testRegex"); return
+    }
+    #expect(matches.count == 2)
+    #expect(matches[0].value == "123")
+    #expect(matches[1].value == "456")
 }
 
-@Test func testRegexNoMatch() {
-    let regex = createRegex(pattern: "\\d+")
-    let result = testRegex(regex: regex, input: "no digits here")
-    #expect(result == "{\"matches\":[]}")
+@Test func testRegexNoMatch() throws {
+    guard case .success(let regex) = createRegex(pattern: "\\d+") else {
+        Issue.record("Pattern did not compile"); return
+    }
+    guard case .success(let matches) = testRegex(regex: regex, input: "no digits here") else {
+        Issue.record("Expected .success from testRegex"); return
+    }
+    #expect(matches.isEmpty)
 }
 
-@Test func testRegexCaptureGroups() {
-    let regex = createRegex(pattern: "(\\w+)@(\\w+)")
-    let result = testRegex(regex: regex, input: "user@host")
-    #expect(result.contains("\"user\""))
-    #expect(result.contains("\"host\""))
+@Test func testRegexCaptureGroups() throws {
+    guard case .success(let regex) = createRegex(pattern: "(\\w+)@(\\w+)") else {
+        Issue.record("Pattern did not compile"); return
+    }
+    guard case .success(let matches) = testRegex(regex: regex, input: "user@host") else {
+        Issue.record("Expected .success from testRegex"); return
+    }
+    #expect(matches.count == 1)
+    #expect(matches[0].groups.count == 2)
+    #expect(matches[0].groups[0].value == "user")
+    #expect(matches[0].groups[1].value == "host")
 }
 
-@Test func testRegexInvalidPatternReturnsError() {
-    let regex = createRegex(pattern: "[invalid")
-    let result = testRegex(regex: regex, input: "anything")
-    #expect(result.hasPrefix("{\"error\":"))
+@Test func testRegexUncompiledReturnsFailure() {
+    let uncompiled = SwiftRegex()
+    guard case .failure(let msg) = testRegex(regex: uncompiled, input: "anything") else {
+        Issue.record("Expected .failure from testRegex with uncompiled regex"); return
+    }
+    #expect(!msg.isEmpty)
 }
+

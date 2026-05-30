@@ -11,6 +11,8 @@ DerivedData/
 .netrc
 
 node_modules/
+.vite/
+/vendor/
 dist/
 dist-ssr/
 *.local

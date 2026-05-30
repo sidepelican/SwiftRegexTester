@@ -2,7 +2,6 @@
 /.build/
 /build/
 /wasm/
-/public/wasm/
 /Packages/
 xcuserdata/
 DerivedData/

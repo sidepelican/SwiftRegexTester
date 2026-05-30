@@ -1,0 +1,42 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Show tool versions
+        run: |
+          swift --version
+          node --version
+          npm --version
+
+      - name: Install Swift WebAssembly SDK
+        run: |
+          set -euo pipefail
+          version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
+          tag="swift-${version}-RELEASE"
+          url="https://download.swift.org/swift-${version}-release/wasm-sdk/${tag}/${tag}_wasm.artifactbundle.tar.gz"
+          archive="$(mktemp)"
+          curl -fsSL "$url" -o "$archive"
+          swift sdk install "$archive"
+          rm -f "$archive"

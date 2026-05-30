@@ -1,0 +1,66 @@
+name: Deploy Pages Branch
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Show tool versions
+        run: |
+          swift --version
+          node --version
+          npm --version
+
+      - name: Install Swift WebAssembly SDK
+        run: |
+          set -euo pipefail
+          version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
+          tag="swift-${version}-RELEASE"
+          url="https://download.swift.org/swift-${version}-release/wasm-sdk/${tag}/${tag}_wasm.artifactbundle.tar.gz"
+          archive="$(mktemp --suffix=.artifactbundle.tar.gz)"
+          curl -fsSL "$url" -o "$archive"
+          swift sdk install "$archive"
+          rm -f "$archive"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: make test
+
+      - name: Build Swift/Wasm bundle
+        run: make build-web
+
+      - name: Build site
+        run: npm run build
+
+      - name: Publish dist to deploy branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: deploy
+          force_orphan: true

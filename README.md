@@ -49,6 +49,8 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    make build-web SWIFT_SDK_ID="<swift-sdk-id>"
    ```
 
+   `public/wasm` はローカル確認や CI ビルド用の中間生成物で、Git にはコミットしません。
+
 6. Vite 開発サーバーを起動します。
 
    ```bash
@@ -56,3 +58,17 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
    ```
 
 7. `http://localhost:5173` を開くと、Swift の `hello()` が返す文字列を確認できます。
+
+## Cloudflare Pages へのデプロイ
+
+`main` へ push すると GitHub Actions の `Deploy Pages Branch` が次を実行します。
+
+1. Swift WebAssembly SDK をインストール
+2. `make test`
+3. `make build-web`
+4. `npm run build`
+5. 生成された `dist/` を `deploy` ブランチへ force-push
+
+Cloudflare Pages 側では、ビルド元ブランチを `deploy` に設定してください。`deploy` ブランチにはビルド済みの静的ファイルだけが置かれる想定です。
+
+この方式では、Swift/Wasm の生成物を `main` ブランチへコミットする必要はありません。

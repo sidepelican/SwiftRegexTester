@@ -1,3 +1,0 @@
-module JavaScriptEventLoopTestSupport {
-    header "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/x86_64-unknown-linux-gnu/debug/JavaScriptEventLoopTestSupport.build/include/JavaScriptEventLoopTestSupport-Swift.h"
-}

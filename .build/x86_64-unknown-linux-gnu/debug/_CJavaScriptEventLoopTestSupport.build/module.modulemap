@@ -1,4 +1,0 @@
-module _CJavaScriptEventLoopTestSupport {
-    umbrella "/home/runner/work/SwiftRegexTester/SwiftRegexTester/.build/checkouts/JavaScriptKit/Sources/_CJavaScriptEventLoopTestSupport/include"
-    export *
-}

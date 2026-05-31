@@ -262,9 +262,12 @@ code {
   box-shadow: 0 4px 16px color-mix(in srgb, CanvasText 12%, transparent);
   min-width: 22rem;
   max-width: 32rem;
-  display: flex;
   flex-direction: column;
   gap: 0.8rem;
+}
+
+.options-popup:popover-open {
+  display: flex;
 }
 
 .options-checkboxes {

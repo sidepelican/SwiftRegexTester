@@ -1,6 +1,6 @@
 SWIFT_SDK_ID ?= swift-6.3.1-RELEASE_wasm
 
-.PHONY: test build build-web serve clean-web
+.PHONY: test build build-web serve
 
 test:
 	swift test
@@ -13,6 +13,3 @@ build-web:
 
 serve:
 	npm run dev
-
-clean-web:
-	rm -rf .build/plugins/PackageToJS

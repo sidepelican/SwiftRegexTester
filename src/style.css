@@ -226,3 +226,104 @@ code {
   color: color-mix(in srgb, CanvasText 40%, transparent);
 }
 
+/* ── Options popup ───────────────────────────────────────────── */
+
+.field-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.options-btn {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid color-mix(in srgb, CanvasText 25%, transparent);
+  border-radius: 0.4rem;
+  background: Canvas;
+  color: CanvasText;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.options-btn:hover {
+  background: color-mix(in srgb, CanvasText 8%, Canvas);
+}
+
+.options-popup {
+  /* Reset popover default styles */
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  border-radius: 0.6rem;
+  padding: 0.9rem 1rem;
+  background: Canvas;
+  color: CanvasText;
+  box-shadow: 0 4px 16px color-mix(in srgb, CanvasText 12%, transparent);
+  min-width: 22rem;
+  max-width: 32rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.options-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+}
+
+.option-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.option-checkbox-label input[type='checkbox'] {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: #4a90d9;
+}
+
+.options-selects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border-top: 1px solid color-mix(in srgb, CanvasText 12%, transparent);
+  padding-top: 0.7rem;
+}
+
+.option-select-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.option-select-label {
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-weight: 400;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  min-width: 11rem;
+}
+
+.option-select-row select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+  border-radius: 0.35rem;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  cursor: pointer;
+}
+

@@ -48,7 +48,7 @@ jobs:
       - name: Optimize wasm artifacts
         run: |
           set -euo pipefail
-          find public/wasm -type f -name "*.wasm" -print0 | while IFS= read -r -d '' file; do
+          find .build/plugins/PackageToJS/outputs/Package -type f -name "*.wasm" -print0 | while IFS= read -r -d '' file; do
             wasm-strip "$file"
             wasm-opt -Oz --all-features --disable-gc --disable-typed-function-references "$file" -o "$file"
           done

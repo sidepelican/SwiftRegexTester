@@ -4,18 +4,13 @@ import './style.css'
 
 type RegexGroup = { value: string; start: number; end: number }
 type RegexMatch = { value: string; start: number; end: number; groups: RegexGroup[] }
-type TaggedResult<T> = { tag: number; param0: T }
-type RegexTagValues = { Tag: { Success: number } }
-
-type SwiftExports = {
-  createRegex: (pattern: string) => TaggedResult<string | unknown>
-  testRegex: (regex: unknown, input: string) => TaggedResult<RegexMatch[]>
-}
+type TaggedResult = { tag: number; param0: unknown }
+type SwiftExports = { createRegex: (pattern: string) => TaggedResult; testRegex: (regex: unknown, input: string) => TaggedResult }
 
 type Runtime = {
   swiftExports: SwiftExports
-  regexCompileResultValues: RegexTagValues
-  regexTestResultValues: RegexTagValues
+  regexCompileSuccessTag: number
+  regexTestSuccessTag: number
 }
 
 type HighlightPart = { text: string; marked: boolean }
@@ -40,6 +35,32 @@ function buildHighlightParts(input: string, matches: RegexMatch[]): HighlightPar
   return parts
 }
 
+function readSuccessTag(moduleLike: unknown, exportName: string): number {
+  const tag =
+    typeof moduleLike === 'object' && moduleLike !== null
+      ? (moduleLike as { [key: string]: unknown })[exportName]
+      : undefined
+  if (typeof tag !== 'object' || tag === null) {
+    throw new Error(`Missing ${exportName}`)
+  }
+
+  const tagContainer = (tag as { Tag?: unknown }).Tag
+  if (typeof tagContainer !== 'object' || tagContainer === null) {
+    throw new Error(`Missing ${exportName}.Tag`)
+  }
+
+  const successTag = (tagContainer as { Success?: unknown }).Success
+  if (typeof successTag !== 'number') {
+    throw new Error(`Missing ${exportName}.Tag.Success`)
+  }
+
+  return successTag
+}
+
+function isRegexMatchArray(value: unknown): value is RegexMatch[] {
+  return Array.isArray(value)
+}
+
 function App() {
   const [pattern, setPattern] = useState('')
   const [input, setInput] = useState('')
@@ -57,10 +78,7 @@ function App() {
           import(/* @vite-ignore */ wasmIndexPath) as Promise<{
             init: (options: Record<string, unknown>) => Promise<{ exports: unknown }>
           }>,
-          import(/* @vite-ignore */ bridgePath) as Promise<{
-            RegexCompileResultValues: RegexTagValues
-            RegexTestResultValues: RegexTagValues
-          }>,
+          import(/* @vite-ignore */ bridgePath),
         ])
 
         const { exports } = await init({})
@@ -68,8 +86,8 @@ function App() {
 
         setRuntime({
           swiftExports: exports as SwiftExports,
-          regexCompileResultValues: bridgeJS.RegexCompileResultValues,
-          regexTestResultValues: bridgeJS.RegexTestResultValues,
+          regexCompileSuccessTag: readSuccessTag(bridgeJS, 'RegexCompileResultValues'),
+          regexTestSuccessTag: readSuccessTag(bridgeJS, 'RegexTestResultValues'),
         })
       } catch (error) {
         if (!alive) return
@@ -105,9 +123,9 @@ function App() {
     }
 
     const compileResult = runtime.swiftExports.createRegex(pattern)
-    if (compileResult.tag !== runtime.regexCompileResultValues.Tag.Success) {
+    if (compileResult.tag !== runtime.regexCompileSuccessTag) {
       return {
-        patternError: String(compileResult.param0),
+        patternError: typeof compileResult.param0 === 'string' ? compileResult.param0 : String(compileResult.param0),
         highlightParts: input ? [{ text: input, marked: false }] : [],
         showPlaceholder: input.length === 0,
         matches: [] as RegexMatch[],
@@ -126,7 +144,7 @@ function App() {
     }
 
     const testResult = runtime.swiftExports.testRegex(compileResult.param0, input)
-    if (testResult.tag !== runtime.regexTestResultValues.Tag.Success) {
+    if (testResult.tag !== runtime.regexTestSuccessTag || !isRegexMatchArray(testResult.param0)) {
       return {
         patternError: '',
         highlightParts: [{ text: input, marked: false }],
@@ -147,16 +165,8 @@ function App() {
   }, [input, pattern, runtime])
 
   return (
-    <>
-      <header>
-        <h1>Swift Regex Tester</h1>
-        <p>
-          Swift の <code>Regex</code> を WebAssembly 経由でテストします
-        </p>
-      </header>
-
-      <main>
-        <section class="inputs">
+    <main>
+      <section class="inputs">
           <div class="field">
             <label for="pattern">正規表現パターン</label>
             <input
@@ -184,58 +194,57 @@ function App() {
               onInput={(event) => setInput((event.currentTarget as HTMLTextAreaElement).value)}
             />
           </div>
-        </section>
+      </section>
 
-        <section class="results">
-          <h2>結果</h2>
-          <div class="highlighted-text" aria-live="polite">
-            {!runtime && !loadError && <span class="loading">WebAssembly を読み込み中…</span>}
-            {loadError && (
-              <span class="load-error">
-                Swift/Wasm の読み込みに失敗しました。
-                <br />
-                <code>{loadError}</code>
-              </span>
+      <section class="results">
+        <h2>結果</h2>
+        <div class="highlighted-text" aria-live="polite">
+          {!runtime && !loadError && <span class="loading">WebAssembly を読み込み中…</span>}
+          {loadError && (
+            <span class="load-error">
+              Swift/Wasm の読み込みに失敗しました。
+              <br />
+              <code>{loadError}</code>
+            </span>
+          )}
+          {runtime && !loadError && result.showPlaceholder && (
+            <span class="placeholder">（空文字列）</span>
+          )}
+          {runtime &&
+            !loadError &&
+            result.highlightParts.map((part, index) =>
+              part.marked ? <mark key={index}>{part.text}</mark> : <Fragment key={index}>{part.text}</Fragment>,
             )}
-            {runtime && !loadError && result.showPlaceholder && (
-              <span class="placeholder">（空文字列）</span>
-            )}
-            {runtime &&
-              !loadError &&
-              result.highlightParts.map((part, index) =>
-                part.marked ? <mark key={index}>{part.text}</mark> : <Fragment key={index}>{part.text}</Fragment>,
-              )}
-          </div>
+        </div>
 
-          <div class="match-details">
-            {runtime && !loadError && result.showNoMatch && <p class="no-match">マッチなし</p>}
-            {runtime && !loadError && result.matches.length > 0 && (
-              <>
-                <p class="match-count">{result.matches.length} 件マッチ</p>
-                <ol class="match-list">
-                  {result.matches.map((match, matchIndex) => (
-                    <li key={matchIndex}>
-                      <code class="match-value">{match.value}</code>{' '}
-                      <span class="range">[{match.start}…{match.end}]</span>
-                      {match.groups.length > 0 && (
-                        <ul class="groups">
-                          {match.groups.map((group, groupIndex) => (
-                            <li key={groupIndex}>
-                              グループ {groupIndex + 1}: <code>{group.value}</code>{' '}
-                              <span class="range">[{group.start}…{group.end}]</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </>
-            )}
-          </div>
-        </section>
-      </main>
-    </>
+        <div class="match-details">
+          {runtime && !loadError && result.showNoMatch && <p class="no-match">マッチなし</p>}
+          {runtime && !loadError && result.matches.length > 0 && (
+            <>
+              <p class="match-count">{result.matches.length} 件マッチ</p>
+              <ol class="match-list">
+                {result.matches.map((match, matchIndex) => (
+                  <li key={matchIndex}>
+                    <code class="match-value">{match.value}</code>{' '}
+                    <span class="range">[{match.start}…{match.end}]</span>
+                    {match.groups.length > 0 && (
+                      <ul class="groups">
+                        {match.groups.map((group, groupIndex) => (
+                          <li key={groupIndex}>
+                            グループ {groupIndex + 1}: <code>{group.value}</code>{' '}
+                            <span class="range">[{group.start}…{group.end}]</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+        </div>
+      </section>
+    </main>
   )
 }
 

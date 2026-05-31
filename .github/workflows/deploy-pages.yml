@@ -22,18 +22,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Show tool versions
-        run: |
-          swift --version
-          node --version
-          npm --version
-
       - name: Install Swift WebAssembly SDK
         run: |
           set -euo pipefail
@@ -44,9 +32,6 @@ jobs:
           curl -fsSL "$url" -o "$archive"
           swift sdk install "$archive"
           rm -f "$archive"
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Install WebAssembly optimization tools
         run: |
@@ -63,6 +48,9 @@ jobs:
             wasm-strip "$file"
             wasm-opt -Oz --all-features --disable-gc --disable-typed-function-references "$file" -o "$file"
           done
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build site
         run: npm run build

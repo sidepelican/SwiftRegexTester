@@ -5,7 +5,41 @@ import './style.css'
 type RegexGroup = { value: string; start: number; end: number }
 type RegexMatch = { value: string; start: number; end: number; groups: RegexGroup[] }
 type TaggedResult = { tag: number; param0: unknown }
-type SwiftExports = { createRegex: (pattern: string) => TaggedResult; testRegex: (regex: unknown, input: string) => TaggedResult }
+
+type MatchingSemantics = 'graphemeCluster' | 'unicodeScalar'
+type RepetitionBehavior = 'eager' | 'possessive' | 'reluctant'
+type WordBoundaryKind = 'simple' | 'defaultBoundaries'
+
+type RegexOptionsJS = {
+  anchorsMatchLineEndings: boolean
+  asciiOnlyCharacterClasses: boolean
+  asciiOnlyDigits: boolean
+  asciiOnlyWhitespace: boolean
+  asciiOnlyWordCharacters: boolean
+  dotMatchesNewlines: boolean
+  ignoresCase: boolean
+  matchingSemantics: MatchingSemantics
+  repetitionBehavior: RepetitionBehavior
+  wordBoundaryKind: WordBoundaryKind
+}
+
+type SwiftExports = {
+  createRegex: (pattern: string, options: RegexOptionsJS) => TaggedResult
+  testRegex: (regex: unknown, input: string) => TaggedResult
+}
+
+const DEFAULT_OPTIONS: RegexOptionsJS = {
+  anchorsMatchLineEndings: false,
+  asciiOnlyCharacterClasses: false,
+  asciiOnlyDigits: false,
+  asciiOnlyWhitespace: false,
+  asciiOnlyWordCharacters: false,
+  dotMatchesNewlines: false,
+  ignoresCase: false,
+  matchingSemantics: 'graphemeCluster',
+  repetitionBehavior: 'eager',
+  wordBoundaryKind: 'defaultBoundaries',
+}
 
 type Runtime = {
   swiftExports: SwiftExports
@@ -66,6 +100,7 @@ function App() {
   const [input, setInput] = useState('')
   const [runtime, setRuntime] = useState<Runtime | null>(null)
   const [loadError, setLoadError] = useState('')
+  const [options, setOptions] = useState<RegexOptionsJS>(DEFAULT_OPTIONS)
 
   useEffect(() => {
     let alive = true
@@ -122,7 +157,7 @@ function App() {
       }
     }
 
-    const compileResult = runtime.swiftExports.createRegex(pattern)
+    const compileResult = runtime.swiftExports.createRegex(pattern, options)
     if (compileResult.tag !== runtime.regexCompileSuccessTag) {
       return {
         patternError: typeof compileResult.param0 === 'string' ? compileResult.param0 : String(compileResult.param0),
@@ -162,13 +197,22 @@ function App() {
       matches,
       showNoMatch: matches.length === 0,
     }
-  }, [input, pattern, runtime])
+  }, [input, pattern, runtime, options])
 
   return (
     <main>
       <section class="inputs">
           <div class="field">
-            <label for="pattern">正規表現パターン</label>
+            <div class="field-header">
+              <label for="pattern">正規表現パターン</label>
+              <button
+                class="options-btn"
+                type="button"
+                popovertarget="options-popup"
+              >
+                オプション ▼
+              </button>
+            </div>
             <input
               id="pattern"
               type="text"
@@ -195,6 +239,87 @@ function App() {
             />
           </div>
       </section>
+
+      {/* Options popover — native browser popover; light-dismiss built-in */}
+      <div
+        id="options-popup"
+        class="options-popup"
+        popover="auto"
+      >
+        <div class="options-checkboxes">
+          {(
+            [
+              'anchorsMatchLineEndings',
+              'asciiOnlyCharacterClasses',
+              'asciiOnlyDigits',
+              'asciiOnlyWhitespace',
+              'asciiOnlyWordCharacters',
+              'dotMatchesNewlines',
+              'ignoresCase',
+            ] as const
+          ).map((key) => (
+            <label key={key} class="option-checkbox-label">
+              <input
+                type="checkbox"
+                checked={options[key]}
+                onChange={() => setOptions((prev) => ({ ...prev, [key]: !prev[key] }))}
+              />
+              {key}
+            </label>
+          ))}
+        </div>
+        <div class="options-selects">
+          <div class="option-select-row">
+            <label class="option-select-label" for="opt-matchingSemantics">matchingSemantics</label>
+            <select
+              id="opt-matchingSemantics"
+              value={options.matchingSemantics}
+              onChange={(e) =>
+                setOptions((prev) => ({
+                  ...prev,
+                  matchingSemantics: (e.currentTarget as HTMLSelectElement).value as MatchingSemantics,
+                }))
+              }
+            >
+              <option value="graphemeCluster">graphemeCluster (default)</option>
+              <option value="unicodeScalar">unicodeScalar</option>
+            </select>
+          </div>
+          <div class="option-select-row">
+            <label class="option-select-label" for="opt-repetitionBehavior">repetitionBehavior</label>
+            <select
+              id="opt-repetitionBehavior"
+              value={options.repetitionBehavior}
+              onChange={(e) =>
+                setOptions((prev) => ({
+                  ...prev,
+                  repetitionBehavior: (e.currentTarget as HTMLSelectElement).value as RepetitionBehavior,
+                }))
+              }
+            >
+              <option value="eager">eager (default)</option>
+              <option value="possessive">possessive</option>
+              <option value="reluctant">reluctant</option>
+            </select>
+          </div>
+          <div class="option-select-row">
+            <label class="option-select-label" for="opt-wordBoundaryKind">wordBoundaryKind</label>
+            <select
+              id="opt-wordBoundaryKind"
+              value={options.wordBoundaryKind}
+              onChange={(e) =>
+                setOptions((prev) => ({
+                  ...prev,
+                  wordBoundaryKind: (e.currentTarget as HTMLSelectElement).value as WordBoundaryKind,
+                }))
+              }
+            >
+              <option value="defaultBoundaries">defaultBoundaries (default)</option>
+              <option value="simple">simple</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       <section class="results">
         <h2>結果</h2>

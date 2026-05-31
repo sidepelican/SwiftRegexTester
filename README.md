@@ -8,7 +8,7 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
 - `./.github/workflows/copilot-setup-steps.yml`: Copilot Cloud Agent向けのNode.js + Swift Wasm SDKセットアップ
 - `Package.swift`: JavaScriptKit / BridgeJS を使う SwiftPM 設定
 - `Makefile`: ネイティブテスト・Wasmビルド
-- `src/main.js`: Swift/Wasm で公開された `hello()` を呼び出して表示する Vite エントリ
+- `src/main.tsx`: Preact + TypeScript で Swift/Wasm の Regex テスター UI を構成する Vite エントリ
 
 ## セットアップ
 

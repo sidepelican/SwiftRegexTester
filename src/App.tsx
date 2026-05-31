@@ -1,7 +1,7 @@
 import { Fragment } from 'preact'
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { init } from 'swiftregextester';
-import { Exports, MatchingSemanticsTag, RegexCompileResultValues, RegexMatch, RegexOptions, RepetitionBehaviorTag, WordBoundaryKindTag } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { Exports, MatchingSemanticsTag, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorTag, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindTag, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 
 const DEFAULT_OPTIONS: RegexOptions = {
   anchorsMatchLineEndings: false,
@@ -11,9 +11,9 @@ const DEFAULT_OPTIONS: RegexOptions = {
   asciiOnlyWordCharacters: false,
   dotMatchesNewlines: false,
   ignoresCase: false,
-  matchingSemantics: 'graphemeCluster',
-  repetitionBehavior: 'eager',
-  wordBoundaryKind: 'defaultBoundaries',
+  matchingSemantics: MatchingSemanticsValues.GraphemeCluster,
+  repetitionBehavior: RepetitionBehaviorValues.Eager,
+  wordBoundaryKind: WordBoundaryKindValues.DefaultBoundaries,
 };
 
 type Runtime = {
@@ -93,10 +93,12 @@ export function App() {
       }
     }
 
-    const compileResult = runtime.swiftExports.SwiftRegex.tryInit(pattern, options);
-    if (compileResult.tag !== RegexCompileResultValues.Tag.Success) {
+    let swiftRegex: SwiftRegex
+    try {
+      swiftRegex = new runtime.swiftExports.SwiftRegex(pattern, options);
+    } catch (error: unknown) {
       return {
-        patternError: typeof compileResult.param0 === 'string' ? compileResult.param0 : String(compileResult.param0),
+        patternError: (error as Error).message,
         highlightParts: input ? [{ text: input, marked: false }] : [],
         showPlaceholder: input.length === 0,
         matches: [] as RegexMatch[],
@@ -113,7 +115,7 @@ export function App() {
         showNoMatch: false,
       }
     }
-    const swiftRegex = compileResult.param0;
+
     const matches = swiftRegex.matches(input);
     return {
       patternError: '',
@@ -206,8 +208,8 @@ export function App() {
                 }))
               }
             >
-              <option value="graphemeCluster">graphemeCluster (default)</option>
-              <option value="unicodeScalar">unicodeScalar</option>
+              <option value={MatchingSemanticsValues.GraphemeCluster}>{MatchingSemanticsValues.GraphemeCluster}</option>
+              <option value={MatchingSemanticsValues.UnicodeScalar}>{MatchingSemanticsValues.UnicodeScalar}</option>
             </select>
           </div>
           <div class="option-select-row">
@@ -222,9 +224,9 @@ export function App() {
                 }))
               }
             >
-              <option value="eager">eager (default)</option>
-              <option value="possessive">possessive</option>
-              <option value="reluctant">reluctant</option>
+              <option value={RepetitionBehaviorValues.Eager}>{RepetitionBehaviorValues.Eager}</option>
+              <option value={RepetitionBehaviorValues.Possessive}>{RepetitionBehaviorValues.Possessive}</option>
+              <option value={RepetitionBehaviorValues.Reluctant}>{RepetitionBehaviorValues.Reluctant}</option>
             </select>
           </div>
           <div class="option-select-row">
@@ -239,8 +241,8 @@ export function App() {
                 }))
               }
             >
-              <option value="defaultBoundaries">defaultBoundaries (default)</option>
-              <option value="simple">simple</option>
+              <option value={WordBoundaryKindValues.DefaultBoundaries}>{WordBoundaryKindValues.DefaultBoundaries}</option>
+              <option value={WordBoundaryKindValues.Simple}>{WordBoundaryKindValues.Simple}</option>
             </select>
           </div>
         </div>

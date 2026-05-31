@@ -14,19 +14,19 @@ import JavaScriptKit
 }
 
 @JS enum MatchingSemantics: String {
-    case graphemeCluster = "graphemeCluster"
-    case unicodeScalar = "unicodeScalar"
+    case graphemeCluster
+    case unicodeScalar
 }
 
 @JS enum RepetitionBehavior: String {
-    case eager = "eager"
-    case possessive = "possessive"
-    case reluctant = "reluctant"
+    case eager
+    case possessive
+    case reluctant
 }
 
 @JS enum WordBoundaryKind: String {
-    case simple = "simple"
-    case defaultBoundaries = "defaultBoundaries"
+    case simple
+    case defaultBoundaries = "default"
 }
 
 @JS struct RegexOptions {
@@ -44,48 +44,23 @@ import JavaScriptKit
 
 @JS class SwiftRegex {
     var regex: Regex<AnyRegexOutput>
-    init(_ regex: Regex<AnyRegexOutput>) {
-        self.regex = regex
-    }
 
-    @JS static func tryInit(pattern: String, options: RegexOptions? = nil) -> RegexCompileResult {
-        let opts = options ?? RegexOptions(
-            anchorsMatchLineEndings: false,
-            asciiOnlyCharacterClasses: false,
-            asciiOnlyDigits: false,
-            asciiOnlyWhitespace: false,
-            asciiOnlyWordCharacters: false,
-            dotMatchesNewlines: false,
-            ignoresCase: false,
-            matchingSemantics: .graphemeCluster,
-            repetitionBehavior: .eager,
-            wordBoundaryKind: .defaultBoundaries
-        )
+    @JS init(pattern: String, options: RegexOptions) throws(JSException) {
         do {
-            var regex = try Regex(pattern)
-            if opts.anchorsMatchLineEndings   { regex = regex.anchorsMatchLineEndings() }
-            if opts.asciiOnlyCharacterClasses { regex = regex.asciiOnlyCharacterClasses() }
-            if opts.asciiOnlyDigits           { regex = regex.asciiOnlyDigits() }
-            if opts.asciiOnlyWhitespace       { regex = regex.asciiOnlyWhitespace() }
-            if opts.asciiOnlyWordCharacters   { regex = regex.asciiOnlyWordCharacters() }
-            if opts.dotMatchesNewlines        { regex = regex.dotMatchesNewlines() }
-            if opts.ignoresCase               { regex = regex.ignoresCase() }
-            switch opts.matchingSemantics {
-            case .graphemeCluster: regex = regex.matchingSemantics(.graphemeCluster)
-            case .unicodeScalar:   regex = regex.matchingSemantics(.unicodeScalar)
-            }
-            switch opts.repetitionBehavior {
-            case .eager:      regex = regex.repetitionBehavior(.eager)
-            case .possessive: regex = regex.repetitionBehavior(.possessive)
-            case .reluctant:  regex = regex.repetitionBehavior(.reluctant)
-            }
-            switch opts.wordBoundaryKind {
-            case .simple:            regex = regex.wordBoundaryKind(.simple)
-            case .defaultBoundaries: regex = regex.wordBoundaryKind(.default)
-            }
-            return .success(SwiftRegex(regex))
+            let o = options
+            self.regex = try Regex(pattern)
+                .anchorsMatchLineEndings(o.anchorsMatchLineEndings)
+                .asciiOnlyCharacterClasses(o.asciiOnlyCharacterClasses)
+                .asciiOnlyDigits(o.asciiOnlyDigits)
+                .asciiOnlyWhitespace(o.asciiOnlyWhitespace)
+                .asciiOnlyWordCharacters(o.asciiOnlyWordCharacters)
+                .dotMatchesNewlines(o.dotMatchesNewlines)
+                .ignoresCase(o.ignoresCase)
+                .matchingSemantics(enum: o.matchingSemantics)
+                .repetitionBehavior(enum: o.repetitionBehavior)
+                .wordBoundaryKind(enum: o.wordBoundaryKind)
         } catch {
-            return .failure("\(error)")
+            throw JSException(message: "\(error)")
         }
     }
 
@@ -117,9 +92,28 @@ import JavaScriptKit
     }
 }
 
-@JS enum RegexCompileResult {
-    case success(SwiftRegex)
-    case failure(String)
+extension Regex {
+     func matchingSemantics(enum enumSemanticLevel: MatchingSemantics) -> Regex<Regex<Output>.RegexOutput> {
+        switch enumSemanticLevel {
+        case .graphemeCluster: return self.matchingSemantics(.graphemeCluster)
+        case .unicodeScalar:   return self.matchingSemantics(.unicodeScalar)
+        }
+     }
+
+     func repetitionBehavior(enum enumRepetitionBehavior: RepetitionBehavior) -> Regex<Regex<Output>.RegexOutput> {
+        switch enumRepetitionBehavior {
+        case .eager:      return self.repetitionBehavior(.eager)
+        case .possessive: return self.repetitionBehavior(.possessive)
+        case .reluctant:  return self.repetitionBehavior(.reluctant)
+        }
+     }
+
+     func wordBoundaryKind(enum enumWordBoundaryKind: WordBoundaryKind) -> Regex<Regex<Output>.RegexOutput> {
+        switch enumWordBoundaryKind {
+        case .simple:            return self.wordBoundaryKind(.simple)
+        case .defaultBoundaries: return self.wordBoundaryKind(.default)
+        }
+     }
 }
 
 @main

@@ -51,11 +51,13 @@ function App() {
 
     const load = async () => {
       try {
+        const wasmIndexPath = '/wasm/index.js'
+        const bridgePath = '/wasm/bridge-js.js'
         const [{ init }, bridgeJS] = await Promise.all([
-          import(/* @vite-ignore */ '/wasm/index.js') as Promise<{
+          import(/* @vite-ignore */ wasmIndexPath) as Promise<{
             init: (options: Record<string, unknown>) => Promise<{ exports: unknown }>
           }>,
-          import(/* @vite-ignore */ '/wasm/bridge-js.js') as Promise<{
+          import(/* @vite-ignore */ bridgePath) as Promise<{
             RegexCompileResultValues: RegexTagValues
             RegexTestResultValues: RegexTagValues
           }>,
@@ -161,7 +163,7 @@ function App() {
               id="pattern"
               type="text"
               placeholder={'例: (\\w+)@(\\w+)'}
-              spellCheck={false}
+              spellcheck={false}
               autoComplete="off"
               autoCapitalize="none"
               value={pattern}

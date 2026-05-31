@@ -1,30 +1,9 @@
 import { Fragment } from 'preact'
 import { useEffect, useMemo, useState } from 'preact/hooks'
-import './style.css'
 import { init } from 'swiftregextester';
-import { Exports, RegexCompileResultValues, RegexTestResultValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { Exports, MatchingSemanticsTag, RegexCompileResultValues, RegexMatch, RegexOptions, RepetitionBehaviorTag, WordBoundaryKindTag } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 
-type RegexGroup = { value: string; start: number; end: number }
-type RegexMatch = { value: string; start: number; end: number; groups: RegexGroup[] }
-
-type MatchingSemantics = 'graphemeCluster' | 'unicodeScalar'
-type RepetitionBehavior = 'eager' | 'possessive' | 'reluctant'
-type WordBoundaryKind = 'simple' | 'defaultBoundaries'
-
-type RegexOptionsJS = {
-  anchorsMatchLineEndings: boolean
-  asciiOnlyCharacterClasses: boolean
-  asciiOnlyDigits: boolean
-  asciiOnlyWhitespace: boolean
-  asciiOnlyWordCharacters: boolean
-  dotMatchesNewlines: boolean
-  ignoresCase: boolean
-  matchingSemantics: MatchingSemantics
-  repetitionBehavior: RepetitionBehavior
-  wordBoundaryKind: WordBoundaryKind
-}
-
-const DEFAULT_OPTIONS: RegexOptionsJS = {
+const DEFAULT_OPTIONS: RegexOptions = {
   anchorsMatchLineEndings: false,
   asciiOnlyCharacterClasses: false,
   asciiOnlyDigits: false,
@@ -35,7 +14,7 @@ const DEFAULT_OPTIONS: RegexOptionsJS = {
   matchingSemantics: 'graphemeCluster',
   repetitionBehavior: 'eager',
   wordBoundaryKind: 'defaultBoundaries',
-}
+};
 
 type Runtime = {
   swiftExports: Exports;
@@ -63,16 +42,12 @@ function buildHighlightParts(input: string, matches: RegexMatch[]): HighlightPar
   return parts
 }
 
-function isRegexMatchArray(value: unknown): value is RegexMatch[] {
-  return Array.isArray(value)
-}
-
 export function App() {
   const [pattern, setPattern] = useState('')
   const [input, setInput] = useState('')
   const [runtime, setRuntime] = useState<Runtime | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [options, setOptions] = useState<RegexOptionsJS>(DEFAULT_OPTIONS)
+  const [options, setOptions] = useState<RegexOptions>(DEFAULT_OPTIONS)
 
   useEffect(() => {
     let alive = true
@@ -118,7 +93,7 @@ export function App() {
       }
     }
 
-    const compileResult = runtime.swiftExports.createRegex(pattern, options)
+    const compileResult = runtime.swiftExports.SwiftRegex.tryInit(pattern, options);
     if (compileResult.tag !== RegexCompileResultValues.Tag.Success) {
       return {
         patternError: typeof compileResult.param0 === 'string' ? compileResult.param0 : String(compileResult.param0),
@@ -138,19 +113,8 @@ export function App() {
         showNoMatch: false,
       }
     }
-
-    const testResult = runtime.swiftExports.testRegex(compileResult.param0, input)
-    if (testResult.tag !== RegexTestResultValues.Tag.Success || !isRegexMatchArray(testResult.param0)) {
-      return {
-        patternError: '',
-        highlightParts: [{ text: input, marked: false }],
-        showPlaceholder: false,
-        matches: [] as RegexMatch[],
-        showNoMatch: false,
-      }
-    }
-
-    const matches = testResult.param0
+    const swiftRegex = compileResult.param0;
+    const matches = swiftRegex.matches(input);
     return {
       patternError: '',
       highlightParts: buildHighlightParts(input, matches),
@@ -238,7 +202,7 @@ export function App() {
               onChange={(e) =>
                 setOptions((prev) => ({
                   ...prev,
-                  matchingSemantics: (e.currentTarget as HTMLSelectElement).value as MatchingSemantics,
+                  matchingSemantics: (e.currentTarget as HTMLSelectElement).value as MatchingSemanticsTag,
                 }))
               }
             >
@@ -254,7 +218,7 @@ export function App() {
               onChange={(e) =>
                 setOptions((prev) => ({
                   ...prev,
-                  repetitionBehavior: (e.currentTarget as HTMLSelectElement).value as RepetitionBehavior,
+                  repetitionBehavior: (e.currentTarget as HTMLSelectElement).value as RepetitionBehaviorTag,
                 }))
               }
             >
@@ -271,7 +235,7 @@ export function App() {
               onChange={(e) =>
                 setOptions((prev) => ({
                   ...prev,
-                  wordBoundaryKind: (e.currentTarget as HTMLSelectElement).value as WordBoundaryKind,
+                  wordBoundaryKind: (e.currentTarget as HTMLSelectElement).value as WordBoundaryKindTag,
                 }))
               }
             >

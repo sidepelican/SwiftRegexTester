@@ -48,8 +48,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install WebAssembly optimization tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binaryen wabt
+
       - name: Build Swift/Wasm bundle
         run: make build-web
+
+      - name: Optimize wasm artifacts
+        run: |
+          set -euo pipefail
+          find public/wasm -type f -name "*.wasm" -print0 | while IFS= read -r -d '' file; do
+            wasm-strip "$file"
+            wasm-opt -Oz "$file" -o "$file"
+          done
 
       - name: Build site
         run: npm run build

@@ -15,4 +15,4 @@ serve:
 	npm run dev
 
 clean-web:
-	rm -rf public/wasm
+	rm -rf .build/plugins/PackageToJS

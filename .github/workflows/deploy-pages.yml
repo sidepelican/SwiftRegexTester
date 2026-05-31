@@ -23,6 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Swift WebAssembly SDK
+        id: install-swift-sdk
         run: |
           set -euo pipefail
           version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
@@ -32,6 +33,7 @@ jobs:
           curl -fsSL "$url" -o "$archive"
           swift sdk install "$archive"
           rm -f "$archive"
+          echo "SWIFT_SDK_ID=${tag}_wasm" >> $GITHUB_OUTPUT
 
       - name: Install WebAssembly optimization tools
         run: |
@@ -40,6 +42,8 @@ jobs:
 
       - name: Build Swift/Wasm bundle
         run: make build-web
+        env:
+          SWIFT_SDK_ID: ${{ steps.install-swift-sdk.outputs.SWIFT_SDK_ID }}
 
       - name: Optimize wasm artifacts
         run: |

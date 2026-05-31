@@ -68,8 +68,9 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
 1. Swift WebAssembly SDK をインストール
 2. `make test`
 3. `make build-web`
-4. `npm run build`
-5. 生成された `dist/` を `deploy` ブランチへ force-push
+4. `public/wasm` 配下の `.wasm` ファイルへ `wasm-opt -Oz` と `wasm-strip` を適用
+5. `npm run build`
+6. 生成された `dist/` を `deploy` ブランチへ force-push
 
 Cloudflare Pages 側では、ビルド元ブランチを `deploy` に設定してください。`deploy` ブランチにはビルド済みの静的ファイルだけが置かれる想定です。
 

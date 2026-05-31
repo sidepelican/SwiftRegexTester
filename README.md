@@ -68,7 +68,7 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
 1. Swift WebAssembly SDK をインストール
 2. `make test`
 3. `make build-web`
-4. `public/wasm` 配下の `.wasm` ファイルへ `wasm-strip` を適用
+4. `public/wasm` 配下の `.wasm` ファイルへ `wasm-strip` と `wasm-opt -Oz --all-features --disable-gc --disable-typed-function-references` を適用
 5. `npm run build`
 6. 生成された `dist/` を `deploy` ブランチへ force-push
 

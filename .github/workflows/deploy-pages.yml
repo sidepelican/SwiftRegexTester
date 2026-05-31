@@ -60,8 +60,8 @@ jobs:
         run: |
           set -euo pipefail
           find public/wasm -type f -name "*.wasm" -print0 | while IFS= read -r -d '' file; do
-            wasm-opt -Oz "$file" -o "$file"
             wasm-strip "$file"
+            wasm-opt -Oz "$file" -o "$file"
           done
 
       - name: Build site

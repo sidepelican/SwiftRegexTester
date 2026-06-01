@@ -1,7 +1,10 @@
-import { Fragment } from 'preact'
-import { useEffect, useMemo, useState } from 'preact/hooks'
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, MatchingSemanticsTag, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorTag, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindTag, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { Exports, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { buildHighlightParts, HighlightPart } from './HighlightPart';
+import { TestResult } from './TestResult';
+import { PatternInput } from './PatternInput';
+import { TestInput } from './TestInput';
 
 const DEFAULT_OPTIONS: RegexOptions = {
   anchorsMatchLineEndings: false,
@@ -19,28 +22,6 @@ const DEFAULT_OPTIONS: RegexOptions = {
 type Runtime = {
   swiftExports: Exports;
 };
-
-type HighlightPart = { text: string; marked: boolean }
-
-function buildHighlightParts(input: string, matches: RegexMatch[]): HighlightPart[] {
-  const chars = [...input]
-  const parts: HighlightPart[] = []
-  let pos = 0
-
-  for (const match of matches) {
-    if (match.start > pos) {
-      parts.push({ text: chars.slice(pos, match.start).join(''), marked: false })
-    }
-    parts.push({ text: chars.slice(match.start, match.end).join(''), marked: true })
-    pos = match.end
-  }
-
-  if (pos < chars.length) {
-    parts.push({ text: chars.slice(pos).join(''), marked: false })
-  }
-
-  return parts
-}
 
 export function App() {
   const [pattern, setPattern] = useState('')
@@ -72,7 +53,13 @@ export function App() {
     }
   }, [])
 
-  const result = useMemo(() => {
+  const result = useMemo<{
+    patternError: string;
+    highlightParts: HighlightPart[];
+    showPlaceholder: boolean;
+    matches: RegexMatch[];
+    showNoMatch: boolean;
+  }>(() => {
     if (!runtime) {
       return {
         patternError: '',
@@ -129,173 +116,22 @@ export function App() {
   return (
     <main>
       <section class="inputs">
-          <div class="field">
-            <div class="field-header">
-              <label for="pattern">正規表現パターン</label>
-              <button
-                class="options-btn"
-                type="button"
-                popovertarget="options-popup"
-              >
-                オプション ▼
-              </button>
-            </div>
-            <input
-              id="pattern"
-              type="text"
-              placeholder={'例: (\\w+)@(\\w+)'}
-              spellcheck={false}
-              autoComplete="off"
-              autoCapitalize="none"
-              value={pattern}
-              onInput={(event) => setPattern((event.currentTarget as HTMLInputElement).value)}
-            />
-            <div id="pattern-error" class="field-error" role="alert">
-              {result.patternError}
-            </div>
-          </div>
+          <PatternInput
+            pattern={pattern}
+            setPattern={setPattern}
+            patternError={result.patternError}
+            options={options}
+            setOptions={setOptions}
+          />
 
-          <div class="field">
-            <label for="teststr">テスト文字列</label>
-            <textarea
-              id="teststr"
-              rows={6}
-              placeholder="テストする文字列を入力してください"
-              value={input}
-              onInput={(event) => setInput((event.currentTarget as HTMLTextAreaElement).value)}
-            />
-          </div>
+          <TestInput input={input} setInput={setInput} />
       </section>
 
-      {/* Options popover — native browser popover; light-dismiss built-in */}
-      <div
-        id="options-popup"
-        class="options-popup"
-        popover="auto"
-      >
-        <div class="options-checkboxes">
-          {(
-            [
-              'anchorsMatchLineEndings',
-              'asciiOnlyCharacterClasses',
-              'asciiOnlyDigits',
-              'asciiOnlyWhitespace',
-              'asciiOnlyWordCharacters',
-              'dotMatchesNewlines',
-              'ignoresCase',
-            ] as const
-          ).map((key) => (
-            <label key={key} class="option-checkbox-label">
-              <input
-                type="checkbox"
-                checked={options[key]}
-                onChange={() => setOptions((prev) => ({ ...prev, [key]: !prev[key] }))}
-              />
-              {key}
-            </label>
-          ))}
-        </div>
-        <div class="options-selects">
-          <div class="option-select-row">
-            <label class="option-select-label" for="opt-matchingSemantics">matchingSemantics</label>
-            <select
-              id="opt-matchingSemantics"
-              value={options.matchingSemantics}
-              onChange={(e) =>
-                setOptions((prev) => ({
-                  ...prev,
-                  matchingSemantics: (e.currentTarget as HTMLSelectElement).value as MatchingSemanticsTag,
-                }))
-              }
-            >
-              <option value={MatchingSemanticsValues.GraphemeCluster}>{MatchingSemanticsValues.GraphemeCluster}</option>
-              <option value={MatchingSemanticsValues.UnicodeScalar}>{MatchingSemanticsValues.UnicodeScalar}</option>
-            </select>
-          </div>
-          <div class="option-select-row">
-            <label class="option-select-label" for="opt-repetitionBehavior">repetitionBehavior</label>
-            <select
-              id="opt-repetitionBehavior"
-              value={options.repetitionBehavior}
-              onChange={(e) =>
-                setOptions((prev) => ({
-                  ...prev,
-                  repetitionBehavior: (e.currentTarget as HTMLSelectElement).value as RepetitionBehaviorTag,
-                }))
-              }
-            >
-              <option value={RepetitionBehaviorValues.Eager}>{RepetitionBehaviorValues.Eager}</option>
-              <option value={RepetitionBehaviorValues.Possessive}>{RepetitionBehaviorValues.Possessive}</option>
-              <option value={RepetitionBehaviorValues.Reluctant}>{RepetitionBehaviorValues.Reluctant}</option>
-            </select>
-          </div>
-          <div class="option-select-row">
-            <label class="option-select-label" for="opt-wordBoundaryKind">wordBoundaryKind</label>
-            <select
-              id="opt-wordBoundaryKind"
-              value={options.wordBoundaryKind}
-              onChange={(e) =>
-                setOptions((prev) => ({
-                  ...prev,
-                  wordBoundaryKind: (e.currentTarget as HTMLSelectElement).value as WordBoundaryKindTag,
-                }))
-              }
-            >
-              <option value={WordBoundaryKindValues.DefaultBoundaries}>{WordBoundaryKindValues.DefaultBoundaries}</option>
-              <option value={WordBoundaryKindValues.Simple}>{WordBoundaryKindValues.Simple}</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <section class="results">
-        <h2>結果</h2>
-        <div class="highlighted-text" aria-live="polite">
-          {!runtime && !loadError && <span class="loading">WebAssembly を読み込み中…</span>}
-          {loadError && (
-            <span class="load-error">
-              Swift/Wasm の読み込みに失敗しました。
-              <br />
-              <code>{loadError}</code>
-            </span>
-          )}
-          {runtime && !loadError && result.showPlaceholder && (
-            <span class="placeholder">（空文字列）</span>
-          )}
-          {runtime &&
-            !loadError &&
-            result.highlightParts.map((part, index) =>
-              part.marked ? <mark key={index}>{part.text}</mark> : <Fragment key={index}>{part.text}</Fragment>,
-            )}
-        </div>
-
-        <div class="match-details">
-          {runtime && !loadError && result.showNoMatch && <p class="no-match">マッチなし</p>}
-          {runtime && !loadError && result.matches.length > 0 && (
-            <>
-              <p class="match-count">{result.matches.length} 件マッチ</p>
-              <ol class="match-list">
-                {result.matches.map((match, matchIndex) => (
-                  <li key={matchIndex}>
-                    <code class="match-value">{match.value}</code>{' '}
-                    <span class="range">[{match.start}…{match.end}]</span>
-                    {match.groups.length > 0 && (
-                      <ul class="groups">
-                        {match.groups.map((group, groupIndex) => (
-                          <li key={groupIndex}>
-                            グループ {groupIndex + 1}: <code>{group.value}</code>{' '}
-                            <span class="range">[{group.start}…{group.end}]</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </>
-          )}
-        </div>
-      </section>
+      <TestResult
+        hasRuntime={runtime !== null}
+        loadError={loadError}
+        result={result}
+      />
     </main>
   )
 }

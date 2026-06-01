@@ -16,17 +16,7 @@ export function PatternInput({
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
 }): ReactNode {
   return <div class="field">
-    <div class="field-header">
-      <label for="pattern">正規表現パターン</label>
-      <button
-        class="options-btn"
-        type="button"
-        popovertarget="options-popup"
-      >
-        オプション ▼
-      </button>
-      <OptionsPopup options={options} setOptions={setOptions} />
-    </div>
+    <label for="pattern">正規表現パターン</label>
     <input
       id="pattern"
       type="text"
@@ -37,13 +27,19 @@ export function PatternInput({
       value={pattern}
       onInput={(event) => setPattern((event.currentTarget as HTMLInputElement).value)}
     />
-    <div id="pattern-error" class="field-error" role="alert">
+    {patternError && <div id="pattern-error" class="field-error" role="alert">
       {patternError}
-    </div>
+    </div>}
+    <details class="options-accordion">
+      <summary class="options-btn">オプション</summary>
+      <div class="options-panel">
+        <OptionsPanel options={options} setOptions={setOptions} />
+      </div>
+    </details>
   </div>
 }
 
-function OptionsPopup({
+function OptionsPanel({
   setOptions,
   options,
 }: {
@@ -53,7 +49,6 @@ function OptionsPopup({
   return <div
     id="options-popup"
     class="options-popup"
-    popover="auto"
   >
     <div class="options-checkboxes">
       {(

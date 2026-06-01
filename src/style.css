@@ -44,20 +44,24 @@ main {
   gap: 1.5rem;
 }
 
+.inputs,
+.results {
+  min-width: 0;
+}
+
 @media (min-width: 700px) {
   main {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .results {
-    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
   }
 }
 
 /* ── Form fields ─────────────────────────────────────────────── */
 
 .inputs {
-  display: contents; /* let children participate in main grid */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .field {
@@ -107,12 +111,10 @@ textarea:focus {
 /* ── Results section ─────────────────────────────────────────── */
 
 .results h2 {
-  margin: 0 0 0.6rem;
-  font-size: 0.95rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: color-mix(in srgb, CanvasText 60%, transparent);
+  color: inherit;
 }
 
 .highlighted-text {
@@ -228,14 +230,14 @@ code {
 
 /* ── Options popup ───────────────────────────────────────────── */
 
-.field-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
+.options-accordion {
+  margin-top: 0.35rem;
 }
 
 .options-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.78rem;
   font-weight: 500;
   padding: 0.2rem 0.55rem;
@@ -246,28 +248,69 @@ code {
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.12s, border-color 0.12s;
+  width: fit-content;
+  flex: 0 0 auto;
+  list-style: none;
 }
 
 .options-btn:hover {
   background: color-mix(in srgb, CanvasText 8%, Canvas);
 }
 
+.options-btn:focus-visible {
+  outline: 2px solid #4a90d9;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+.options-btn::-webkit-details-marker {
+  display: none;
+}
+
+.options-btn::after {
+  content: '▼';
+  font-size: 0.7rem;
+}
+
+.options-accordion[open] .options-btn::after {
+  content: '▲';
+}
+
+.options-panel {
+  margin-top: 0.55rem;
+}
+
 .options-popup {
-  /* Reset popover default styles */
   border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
   border-radius: 0.6rem;
   padding: 0.9rem 1rem;
   background: Canvas;
   color: CanvasText;
-  box-shadow: 0 4px 16px color-mix(in srgb, CanvasText 12%, transparent);
-  min-width: 22rem;
-  max-width: 32rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
-.options-popup:popover-open {
-  display: flex;
+@media (max-width: 640px) {
+  .options-popup {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .options-checkboxes {
+    grid-template-columns: 1fr;
+  }
+
+  .option-select-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .option-select-label {
+    min-width: 0;
+  }
 }
 
 .options-checkboxes {
@@ -329,4 +372,3 @@ code {
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   cursor: pointer;
 }
-

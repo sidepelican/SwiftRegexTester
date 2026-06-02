@@ -20,24 +20,20 @@ private func defaultOptions(
     )
 }
 
-@Test func createRegexValid() throws {
+@Test func makeValidRegex() throws {
     let regex = try SwiftRegex(pattern: "\\d+", options: defaultOptions())
     let matches = regex.matches(of: "abc 123")
     #expect(matches.count == 1)
     #expect(matches[0].value == "123")
 }
 
-@Test func createRegexInvalid() {
-#if arch(wasm32)
-    #expect(throws: JSException.self) {
-        _ = try SwiftRegex(pattern: "[invalid", options: defaultOptions())
+@Test func makeInvalidRegex() {
+    #expect(throws: (any Error).self) {
+        _ = try SwiftRegex.make(pattern: "[invalid", options: defaultOptions())
     }
-#else
-    #expect(Bool(true))
-#endif
 }
 
-@Test func testRegexMatches() throws {
+@Test func regexMatches() throws {
     let regex = try SwiftRegex(pattern: "\\d+", options: defaultOptions())
     let matches = regex.matches(of: "abc 123 def 456")
 
@@ -50,14 +46,14 @@ private func defaultOptions(
     #expect(matches[1].end == 15)
 }
 
-@Test func testRegexNoMatch() throws {
+@Test func regexNoMatch() throws {
     let regex = try SwiftRegex(pattern: "\\d+", options: defaultOptions())
     let matches = regex.matches(of: "no digits here")
     #expect(matches.isEmpty)
 }
 
-@Test func testRegexCaptureGroups() throws {
-    let regex = try SwiftRegex(pattern: "(\\w+)@(\\w+)", options: defaultOptions())
+@Test func regexCaptureGroups() throws {
+    let regex = try SwiftRegex(pattern: "(\\w+)@(?<domain>\\w+)", options: defaultOptions())
     let matches = regex.matches(of: "user@host")
 
     #expect(matches.count == 1)
@@ -66,13 +62,13 @@ private func defaultOptions(
     #expect(matches[0].groups[0].value == "user")
     #expect(matches[0].groups[0].start == 0)
     #expect(matches[0].groups[0].end == 4)
-    #expect(matches[0].groups[1].name == "2")
+    #expect(matches[0].groups[1].name == "domain")
     #expect(matches[0].groups[1].value == "host")
     #expect(matches[0].groups[1].start == 5)
     #expect(matches[0].groups[1].end == 9)
 }
 
-@Test func testRegexIgnoresCaseOption() throws {
+@Test func regexIgnoresCaseOption() throws {
     let regex = try SwiftRegex(pattern: "abc", options: defaultOptions(ignoresCase: true))
     let matches = regex.matches(of: "AbC")
 

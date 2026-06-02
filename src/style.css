@@ -124,10 +124,12 @@ textarea:focus {
   border-radius: 0.5rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   font-size: 0.9rem;
-  white-space: pre-wrap;
-  word-break: break-all;
+  white-space: pre;
   min-height: 3rem;
+  height: fit-content;
+  max-height: 24rem;
   line-height: 1.7;
+  overflow: auto;
 }
 
 mark {
@@ -161,6 +163,8 @@ mark {
 .match-details {
   margin-top: 0.75rem;
   font-size: 0.875rem;
+  max-height: min(20rem, 45vh);
+  overflow: auto;
 }
 
 .no-match {
@@ -186,6 +190,8 @@ mark {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  width: max-content;
+  min-width: 100%;
 }
 
 .match-list li {
@@ -216,6 +222,8 @@ code {
   gap: 0.1rem;
   list-style: disc;
   color: color-mix(in srgb, CanvasText 70%, transparent);
+  width: max-content;
+  min-width: 100%;
 }
 
 .groups code {

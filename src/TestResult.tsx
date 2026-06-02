@@ -51,7 +51,7 @@ export function TestResult({
                     <ul class="groups">
                       {match.groups.map((group, groupIndex) => (
                         <li key={groupIndex}>
-                          .{group.name}: <code>{group.value}</code>{' '}
+                          output.{group.name}: <code>{group.value}</code>{' '}
                           <span class="range">[{group.start}…{group.end}]</span>
                         </li>
                       ))}

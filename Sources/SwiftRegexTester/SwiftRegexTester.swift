@@ -46,20 +46,28 @@ import JavaScriptKit
 @JS class SwiftRegex {
     var regex: Regex<AnyRegexOutput>
 
-    @JS init(pattern: String, options: RegexOptions) throws(JSException) {
+    init(regex: Regex<AnyRegexOutput>) {
+        self.regex = regex
+    }
+
+    static func make(pattern: String, options: RegexOptions) throws -> Regex<AnyRegexOutput> {
+        let o = options
+        return try Regex(pattern)
+            .anchorsMatchLineEndings(o.anchorsMatchLineEndings)
+            .asciiOnlyCharacterClasses(o.asciiOnlyCharacterClasses)
+            .asciiOnlyDigits(o.asciiOnlyDigits)
+            .asciiOnlyWhitespace(o.asciiOnlyWhitespace)
+            .asciiOnlyWordCharacters(o.asciiOnlyWordCharacters)
+            .dotMatchesNewlines(o.dotMatchesNewlines)
+            .ignoresCase(o.ignoresCase)
+            .matchingSemantics(enum: o.matchingSemantics)
+            .repetitionBehavior(enum: o.repetitionBehavior)
+            .wordBoundaryKind(enum: o.wordBoundaryKind)
+    }
+
+    @JS convenience init(pattern: String, options: RegexOptions) throws(JSException) {
         do {
-            let o = options
-            self.regex = try Regex(pattern)
-                .anchorsMatchLineEndings(o.anchorsMatchLineEndings)
-                .asciiOnlyCharacterClasses(o.asciiOnlyCharacterClasses)
-                .asciiOnlyDigits(o.asciiOnlyDigits)
-                .asciiOnlyWhitespace(o.asciiOnlyWhitespace)
-                .asciiOnlyWordCharacters(o.asciiOnlyWordCharacters)
-                .dotMatchesNewlines(o.dotMatchesNewlines)
-                .ignoresCase(o.ignoresCase)
-                .matchingSemantics(enum: o.matchingSemantics)
-                .repetitionBehavior(enum: o.repetitionBehavior)
-                .wordBoundaryKind(enum: o.wordBoundaryKind)
+            self.init(regex: try Self.make(pattern: pattern, options: options))
         } catch {
             throw JSException(message: "\(error)")
         }

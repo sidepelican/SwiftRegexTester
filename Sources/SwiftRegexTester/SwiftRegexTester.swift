@@ -70,7 +70,7 @@ import JavaScriptKit
             let value = String(input[match.range])
             let start = input.distance(from: input.startIndex, to: match.range.lowerBound)
             let end   = input.distance(from: input.startIndex, to: match.range.upperBound)
-            let groups = zip(1..., match.output.dropFirst()).compactMap { i, output in
+            let groups: [CaptureGroup] = zip(1..., match.output.dropFirst()).compactMap { i, output in
                 guard let sub = output.substring else { return nil }
                 let gStart = input.distance(from: input.startIndex, to: sub.startIndex)
                 let gEnd   = input.distance(from: input.startIndex, to: sub.endIndex)

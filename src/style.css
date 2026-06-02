@@ -294,28 +294,9 @@ code {
   gap: 0.8rem;
 }
 
-@media (max-width: 640px) {
-  .options-popup {
-    padding: 0.8rem 0.9rem;
-  }
-
-  .options-checkboxes {
-    grid-template-columns: 1fr;
-  }
-
-  .option-select-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .option-select-label {
-    min-width: 0;
-  }
-}
-
 .options-checkboxes {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
   gap: 0.35rem 0.75rem;
 }
 
@@ -327,6 +308,8 @@ code {
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   cursor: pointer;
   font-weight: 400;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .option-checkbox-label input[type='checkbox'] {
@@ -346,18 +329,17 @@ code {
 }
 
 .option-select-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: 0.25rem;
 }
 
 .option-select-label {
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   font-weight: 400;
-  white-space: nowrap;
-  flex: 0 0 auto;
-  min-width: 11rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .option-select-row select {
@@ -371,4 +353,10 @@ code {
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .options-popup {
+    padding: 0.8rem 0.9rem;
+  }
 }

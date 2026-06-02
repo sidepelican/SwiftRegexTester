@@ -1,6 +1,7 @@
 import JavaScriptKit
 
 @JS struct CaptureGroup {
+    var name: String
     var value: String
     var start: Int
     var end: Int
@@ -65,30 +66,23 @@ import JavaScriptKit
     }
 
     @JS func matches(of input: String) -> [RegexMatch] {
-        let r = regex
-
-        var matches: [RegexMatch] = []
-        for match in input.matches(of: r) {
+        return input.matches(of: regex).map { match in
             let value = String(input[match.range])
             let start = input.distance(from: input.startIndex, to: match.range.lowerBound)
             let end   = input.distance(from: input.startIndex, to: match.range.upperBound)
-
-            var groups: [CaptureGroup] = []
-            let output = match.output
-            if output.count > 1 {
-                for i in 1..<output.count {
-                    if let sub = output[i].value as? Substring {
-                        let gStart = input.distance(from: input.startIndex, to: sub.startIndex)
-                        let gEnd   = input.distance(from: input.startIndex, to: sub.endIndex)
-                        groups.append(CaptureGroup(value: String(sub), start: gStart, end: gEnd))
-                    }
-                }
+            let groups = zip(1..., match.output.dropFirst()).compactMap { i, output in
+                guard let sub = output.substring else { return nil }
+                let gStart = input.distance(from: input.startIndex, to: sub.startIndex)
+                let gEnd   = input.distance(from: input.startIndex, to: sub.endIndex)
+                return CaptureGroup(
+                    name: output.name ?? "\(i)",
+                    value: String(sub),
+                    start: gStart,
+                    end: gEnd
+                )
             }
-
-            matches.append(RegexMatch(value: value, start: start, end: end, groups: groups))
+            return RegexMatch(value: value, start: start, end: end, groups: groups)
         }
-
-        return matches
     }
 }
 

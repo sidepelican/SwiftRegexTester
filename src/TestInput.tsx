@@ -1,5 +1,5 @@
 import { Fragment, ReactNode } from "preact/compat";
-import { HighlightPart } from "./HighlightPart";
+import { HighlightPart } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
 import { useRef } from "preact/hooks";
 
 export function TestInput({

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
-import { buildHighlightParts, HighlightPart } from './HighlightPart';
+import { Exports, HighlightPart, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { TestResult } from './TestResult';
 import { PatternInput } from './PatternInput';
 import { TestInput } from './TestInput';
@@ -71,11 +70,11 @@ export function App() {
       }
     }
 
-    const matches = swiftRegex.matches(input);
+    const regexResult = swiftRegex.result(input);
     return {
       patternError: '',
-      highlightParts: buildHighlightParts(input, matches),
-      matches,
+      highlightParts: regexResult.highlightParts,
+      matches: regexResult.matches,
     }
   }, [input, pattern, runtime, options])
 

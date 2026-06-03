@@ -14,6 +14,16 @@ import JavaScriptKit
     var groups: [CaptureGroup]
 }
 
+@JS struct RegexResult {
+    var matches: [RegexMatch]
+    var highlightParts: [HighlightPart]
+}
+
+@JS struct HighlightPart {
+    var text: String
+    var marked: Bool
+}
+
 @JS enum MatchingSemantics: String {
     case graphemeCluster
     case unicodeScalar
@@ -73,15 +83,19 @@ import JavaScriptKit
         }
     }
 
-    @JS func matches(of input: String) -> [RegexMatch] {
-        return input.matches(of: regex).map { match in
+    @JS func result(of input: String) -> RegexResult {
+        var matches: [RegexMatch] = []
+        var parts: [HighlightPart] = []
+        var currentIndex = input.startIndex
+
+        for match in input.matches(of: regex) {
             let value = String(input[match.range])
             let start = input.distance(from: input.startIndex, to: match.range.lowerBound)
-            let end   = input.distance(from: input.startIndex, to: match.range.upperBound)
+            let end = input.distance(from: input.startIndex, to: match.range.upperBound)
             let groups: [CaptureGroup] = zip(1..., match.output.dropFirst()).compactMap { i, output in
                 guard let sub = output.substring else { return nil }
                 let gStart = input.distance(from: input.startIndex, to: sub.startIndex)
-                let gEnd   = input.distance(from: input.startIndex, to: sub.endIndex)
+                let gEnd = input.distance(from: input.startIndex, to: sub.endIndex)
                 return CaptureGroup(
                     name: output.name ?? "\(i)",
                     value: String(sub),
@@ -89,8 +103,29 @@ import JavaScriptKit
                     end: gEnd
                 )
             }
-            return RegexMatch(value: value, start: start, end: end, groups: groups)
+            matches.append(RegexMatch(value: value, start: start, end: end, groups: groups))
+
+            if currentIndex < match.range.lowerBound {
+                parts.append(HighlightPart(
+                    text: String(input[currentIndex..<match.range.lowerBound]),
+                    marked: false
+                ))
+            }
+            parts.append(HighlightPart(
+                text: String(input[match.range]),
+                marked: true
+            ))
+            currentIndex = match.range.upperBound
         }
+
+        if currentIndex < input.endIndex {
+            parts.append(HighlightPart(
+                text: String(input[currentIndex..<input.endIndex]),
+                marked: false
+            ))
+        }
+
+        return RegexResult(matches: matches, highlightParts: parts)
     }
 }
 

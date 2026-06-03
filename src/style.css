@@ -389,10 +389,11 @@ code {
 }
 
 .option-select-header {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   gap: 0.35rem;
-  width: fit-content;
+  width: auto;
 }
 
 .option-select-label {
@@ -437,7 +438,7 @@ code {
 .option-help-popover {
   position: absolute;
   top: calc(100% + 0.35rem);
-  right: 0;
+  right: -1.25rem;
   z-index: 5;
   width: min(22rem, calc(100vw - 2rem));
   padding: 0.5rem 0.6rem;
@@ -482,20 +483,4 @@ code {
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   cursor: pointer;
-}
-
-@media (max-width: 640px) {
-  .options-popup {
-    padding: 0.8rem 0.9rem;
-  }
-
-  .option-help-popover {
-    position: fixed;
-    left: 0.75rem;
-    right: 0.75rem;
-    top: auto;
-    bottom: 0.75rem;
-    width: auto;
-    max-width: none;
-  }
 }

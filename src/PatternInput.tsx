@@ -2,10 +2,6 @@ import { ReactNode } from "preact/compat";
 import { MatchingSemanticsTag, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorTag, RepetitionBehaviorValues, WordBoundaryKindTag, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
 import { Dispatch, StateUpdater, useEffect, useState } from "preact/hooks";
 
-type OptionHelp = {
-  description: string;
-};
-
 const CHECKBOX_OPTION_KEYS = [
   "anchorsMatchLineEndings",
   "asciiOnlyCharacterClasses",
@@ -16,37 +12,17 @@ const CHECKBOX_OPTION_KEYS = [
   "ignoresCase",
 ] as const;
 
-const OPTION_HELP: Record<keyof RegexOptions, OptionHelp> = {
-  anchorsMatchLineEndings: {
-    description: "Makes ^ and $ match at line boundaries, not only at the start and end of the entire input.",
-  },
-  asciiOnlyCharacterClasses: {
-    description: "Limits regex character classes such as \\w, \\d, and \\s to ASCII behavior.",
-  },
-  asciiOnlyDigits: {
-    description: "Treats digit matching as ASCII-only (0-9) instead of full Unicode decimal digits.",
-  },
-  asciiOnlyWhitespace: {
-    description: "Treats whitespace matching as ASCII-only instead of the full Unicode whitespace set.",
-  },
-  asciiOnlyWordCharacters: {
-    description: "Treats word characters as ASCII-only (letters, digits, underscore) for word-related matching.",
-  },
-  dotMatchesNewlines: {
-    description: "Allows . to match newline characters too, instead of stopping at line breaks.",
-  },
-  ignoresCase: {
-    description: "Enables case-insensitive matching.",
-  },
-  matchingSemantics: {
-    description: "Chooses whether matching works by grapheme clusters (user-perceived characters) or Unicode scalars.",
-  },
-  repetitionBehavior: {
-    description: "Controls quantifier behavior: eager (greedy), reluctant (lazy), or possessive (no backtracking).",
-  },
-  wordBoundaryKind: {
-    description: "Selects how word boundaries are determined (default Unicode-aware boundaries or simpler ones).",
-  },
+const OPTION_HELP: Record<keyof RegexOptions, string> = {
+  anchorsMatchLineEndings: "Makes ^ and $ match at line boundaries, not only at the start and end of the entire input.",
+  asciiOnlyCharacterClasses: "Limits regex character classes such as \\w, \\d, and \\s to ASCII behavior.",
+  asciiOnlyDigits: "Treats digit matching as ASCII-only (0-9) instead of full Unicode decimal digits.",
+  asciiOnlyWhitespace: "Treats whitespace matching as ASCII-only instead of the full Unicode whitespace set.",
+  asciiOnlyWordCharacters: "Treats word characters as ASCII-only (letters, digits, underscore) for word-related matching.",
+  dotMatchesNewlines: "Allows . to match newline characters too, instead of stopping at line breaks.",
+  ignoresCase: "Enables case-insensitive matching.",
+  matchingSemantics: "Chooses whether matching works by grapheme clusters (user-perceived characters) or Unicode scalars.",
+  repetitionBehavior: "Controls quantifier behavior: eager (greedy), reluctant (lazy), or possessive (no backtracking).",
+  wordBoundaryKind: "Selects how word boundaries are determined (default Unicode-aware boundaries or simpler ones).",
 };
 
 export function PatternInput({
@@ -126,7 +102,7 @@ function OptionsPanel({
           />
           <HelpPopover
             optionName={key}
-            description={OPTION_HELP[key].description}
+            description={OPTION_HELP[key]}
             openHelpId={openHelpId}
             setOpenHelpId={setOpenHelpId}
           />
@@ -140,7 +116,7 @@ function OptionsPanel({
           <label class="option-select-label" for="opt-matchingSemantics">matchingSemantics</label>
           <HelpPopover
             optionName="matchingSemantics"
-            description={OPTION_HELP.matchingSemantics.description}
+            description={OPTION_HELP.matchingSemantics}
             openHelpId={openHelpId}
             setOpenHelpId={setOpenHelpId}
           />
@@ -164,7 +140,7 @@ function OptionsPanel({
           <label class="option-select-label" for="opt-repetitionBehavior">repetitionBehavior</label>
           <HelpPopover
             optionName="repetitionBehavior"
-            description={OPTION_HELP.repetitionBehavior.description}
+            description={OPTION_HELP.repetitionBehavior}
             openHelpId={openHelpId}
             setOpenHelpId={setOpenHelpId}
           />
@@ -189,7 +165,7 @@ function OptionsPanel({
           <label class="option-select-label" for="opt-wordBoundaryKind">wordBoundaryKind</label>
           <HelpPopover
             optionName="wordBoundaryKind"
-            description={OPTION_HELP.wordBoundaryKind.description}
+            description={OPTION_HELP.wordBoundaryKind}
             openHelpId={openHelpId}
             setOpenHelpId={setOpenHelpId}
           />

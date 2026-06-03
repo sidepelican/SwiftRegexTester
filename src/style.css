@@ -439,7 +439,7 @@ code {
   top: calc(100% + 0.35rem);
   right: 0;
   z-index: 5;
-  width: min(22rem, 75vw);
+  width: min(22rem, calc(100vw - 2rem));
   padding: 0.5rem 0.6rem;
   border-radius: 0.5rem;
   border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
@@ -448,6 +448,27 @@ code {
   font-size: 0.74rem;
   line-height: 1.45;
   box-shadow: 0 8px 20px color-mix(in srgb, CanvasText 15%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s linear 0.12s;
+}
+
+.option-help:hover .option-help-popover,
+.option-help:focus-within .option-help-popover,
+.option-help.is-open .option-help-popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.option-help:hover .option-help-trigger,
+.option-help:focus-within .option-help-trigger,
+.option-help.is-open .option-help-trigger {
+  background: color-mix(in srgb, CanvasText 8%, Canvas);
 }
 
 .option-select-row select {
@@ -469,8 +490,12 @@ code {
   }
 
   .option-help-popover {
-    right: auto;
-    left: 0;
-    width: min(22rem, 84vw);
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    top: auto;
+    bottom: 0.75rem;
+    width: auto;
+    max-width: none;
   }
 }

@@ -226,9 +226,7 @@ function HelpPopover({
   const isOpen = openHelpId === optionName;
 
   return <span
-    class="option-help"
-    onMouseEnter={() => setOpenHelpId(optionName)}
-    onMouseLeave={() => setOpenHelpId((prev) => (prev === optionName ? null : prev))}
+    class={`option-help ${isOpen ? "is-open" : ""}`}
   >
     <button
       type="button"
@@ -243,10 +241,8 @@ function HelpPopover({
     >
       ?
     </button>
-    {isOpen && (
-      <span role="tooltip" class="option-help-popover">
-        {description}
-      </span>
-    )}
+    <span role="tooltip" class="option-help-popover">
+      {description}
+    </span>
   </span>
 }

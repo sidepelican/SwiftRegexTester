@@ -39,11 +39,7 @@ private func defaultOptions(
 
     #expect(result.matches.count == 2)
     #expect(result.matches[0].value == "123")
-    #expect(result.matches[0].start == 4)
-    #expect(result.matches[0].end == 7)
     #expect(result.matches[1].value == "456")
-    #expect(result.matches[1].start == 12)
-    #expect(result.matches[1].end == 15)
 }
 
 @Test func regexNoMatch() throws {
@@ -60,12 +56,8 @@ private func defaultOptions(
     #expect(result.matches[0].groups.count == 2)
     #expect(result.matches[0].groups[0].name == "1")
     #expect(result.matches[0].groups[0].value == "user")
-    #expect(result.matches[0].groups[0].start == 0)
-    #expect(result.matches[0].groups[0].end == 4)
     #expect(result.matches[0].groups[1].name == "domain")
     #expect(result.matches[0].groups[1].value == "host")
-    #expect(result.matches[0].groups[1].start == 5)
-    #expect(result.matches[0].groups[1].end == 9)
 }
 
 @Test func regexIgnoresCaseOption() throws {

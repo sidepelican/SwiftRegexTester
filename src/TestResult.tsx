@@ -31,14 +31,12 @@ export function TestResult({
             <ol class="match-list">
               {result.matches.map((match, matchIndex) => (
                 <li key={matchIndex}>
-                  <code class="match-value">{match.value}</code>{' '}
-                  <span class="range">[{match.start}…{match.end}]</span>
+                  <code class="match-value">{match.value}</code>
                   {match.groups.length > 0 && (
                     <ul class="groups">
                       {match.groups.map((group, groupIndex) => (
                         <li key={groupIndex}>
-                          output.{group.name}: <code>{group.value}</code>{' '}
-                          <span class="range">[{group.start}…{group.end}]</span>
+                          output.{group.name}: <code>{group.value}</code>
                         </li>
                       ))}
                     </ul>

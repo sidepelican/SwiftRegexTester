@@ -3,14 +3,10 @@ import JavaScriptKit
 @JS struct CaptureGroup {
     var name: String
     var value: String
-    var start: Int
-    var end: Int
 }
 
 @JS struct RegexMatch {
     var value: String
-    var start: Int
-    var end: Int
     var groups: [CaptureGroup]
 }
 
@@ -90,20 +86,14 @@ import JavaScriptKit
 
         for match in input.matches(of: regex) {
             let value = String(input[match.range])
-            let start = input.distance(from: input.startIndex, to: match.range.lowerBound)
-            let end = input.distance(from: input.startIndex, to: match.range.upperBound)
             let groups: [CaptureGroup] = zip(1..., match.output.dropFirst()).compactMap { i, output in
                 guard let sub = output.substring else { return nil }
-                let gStart = input.distance(from: input.startIndex, to: sub.startIndex)
-                let gEnd = input.distance(from: input.startIndex, to: sub.endIndex)
                 return CaptureGroup(
                     name: output.name ?? "\(i)",
-                    value: String(sub),
-                    start: gStart,
-                    end: gEnd
+                    value: String(sub)
                 )
             }
-            matches.append(RegexMatch(value: value, start: start, end: end, groups: groups))
+            matches.append(RegexMatch(value: value, groups: groups))
 
             if currentIndex < match.range.lowerBound {
                 parts.append(HighlightPart(

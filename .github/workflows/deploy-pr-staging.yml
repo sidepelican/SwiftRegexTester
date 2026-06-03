@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
     env:
       STAGING_BRANCH: staging/pr-${{ github.event.pull_request.number }}
-      CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+      CLOUDFLARE_PAGES_PROJECT: swift-regex-tester
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -42,11 +42,6 @@ jobs:
           rm -f "$archive"
           echo "SWIFT_SDK_ID=${tag}_wasm" >> "$GITHUB_OUTPUT"
 
-      - name: Install WebAssembly optimization tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y binaryen wabt
-
       - name: Run tests
         run: make test
 
@@ -54,14 +49,6 @@ jobs:
         run: make build-web
         env:
           SWIFT_SDK_ID: ${{ steps.install-swift-sdk.outputs.SWIFT_SDK_ID }}
-
-      - name: Optimize wasm artifacts
-        run: |
-          set -euo pipefail
-          find .build/plugins/PackageToJS/outputs/Package -type f -name "*.wasm" -print0 | while IFS= read -r -d '' file; do
-            wasm-strip "$file"
-            wasm-opt -Oz --all-features --disable-gc --disable-typed-function-references "$file" -o "$file"
-          done
 
       - name: Install dependencies
         run: npm ci
@@ -82,11 +69,7 @@ jobs:
         run: |
           set -euo pipefail
           slug="$(echo "${STAGING_BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9-]+#-#g; s#-+#-#g; s#^-##; s#-$##')"
-          if [ -n "${CLOUDFLARE_PAGES_PROJECT}" ]; then
-            echo "url=https://${slug}.${CLOUDFLARE_PAGES_PROJECT}.pages.dev" >> "$GITHUB_OUTPUT"
-          else
-            echo "url=" >> "$GITHUB_OUTPUT"
-          fi
+          echo "url=https://${slug}.${CLOUDFLARE_PAGES_PROJECT}.pages.dev" >> "$GITHUB_OUTPUT"
 
       - name: Comment preview URL
         uses: actions/github-script@v8
@@ -98,9 +81,7 @@ jobs:
             const marker = '<!-- pr-staging-preview -->'
             const previewURL = process.env.PREVIEW_URL
             const branch = process.env.STAGING_BRANCH
-            const body = previewURL
-              ? `${marker}\n✅ PR staging branch is updated.\n\n- Branch: \`${branch}\`\n- Preview: ${previewURL}`
-              : `${marker}\n✅ PR staging branch is updated.\n\n- Branch: \`${branch}\`\n- Preview URL: Set repository variable \`CLOUDFLARE_PAGES_PROJECT\` to show a direct link.`
+            const body = `${marker}\n✅ PR staging branch is updated.\n\n- Branch: \`${branch}\`\n- Preview: ${previewURL}`
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -127,15 +108,6 @@ jobs:
                 body
               })
             }
-
-  notify-fork:
-    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-latest
-    permissions: {}
-    steps:
-      - name: Skip deployment for fork pull requests
-        run: |
-          echo "Fork pull request detected. Skip staging branch deployment because GITHUB_TOKEN does not have write permission." >> "$GITHUB_STEP_SUMMARY"
 
   cleanup:
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository

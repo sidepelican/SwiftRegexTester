@@ -383,17 +383,17 @@ code {
 }
 
 .option-select-row {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 0.25rem;
 }
 
-.option-select-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+.option-select-container {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
   gap: 0.35rem;
-  width: auto;
 }
 
 .option-select-label {
@@ -473,9 +473,8 @@ code {
 }
 
 .option-select-row select {
-  flex: 1;
   min-width: 0;
-  padding: 0.25rem 0.5rem;
+  margin-inline-end: 0.2rem;
   border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
   border-radius: 0.35rem;
   background: Canvas;

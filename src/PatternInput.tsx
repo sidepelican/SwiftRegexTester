@@ -56,7 +56,7 @@ export function PatternInput({
       {patternError}
     </div>}
     <details class="options-accordion">
-    <summary class="options-btn">Options</summary>
+      <summary class="options-btn">Options</summary>
       <div class="options-panel">
         <OptionsPanel options={options} setOptions={setOptions} />
       </div>
@@ -89,19 +89,19 @@ function OptionsPanel({
     class="options-popup"
   >
     <div class="options-checkboxes">
-      {CHECKBOX_OPTION_KEYS.map((key) => 
-        <CheckboxOption 
+      {CHECKBOX_OPTION_KEYS.map((key) =>
+        <CheckboxOption
           key={key}
-          optionKey={key} 
-          options={options} 
-          setOptions={setOptions} 
-          openHelpId={openHelpId} 
-          setOpenHelpId={setOpenHelpId} 
+          optionKey={key}
+          options={options}
+          setOptions={setOptions}
+          openHelpId={openHelpId}
+          setOpenHelpId={setOpenHelpId}
         />
       )}
     </div>
     <div class="options-selects">
-      <SelectOption 
+      <SelectOption
         optionKey="matchingSemantics"
         values={[MatchingSemanticsValues.GraphemeCluster, MatchingSemanticsValues.UnicodeScalar]}
         options={options}
@@ -109,7 +109,7 @@ function OptionsPanel({
         openHelpId={openHelpId}
         setOpenHelpId={setOpenHelpId}
       />
-      <SelectOption 
+      <SelectOption
         optionKey="repetitionBehavior"
         values={[RepetitionBehaviorValues.Eager, RepetitionBehaviorValues.Possessive, RepetitionBehaviorValues.Reluctant]}
         options={options}
@@ -117,7 +117,7 @@ function OptionsPanel({
         openHelpId={openHelpId}
         setOpenHelpId={setOpenHelpId}
       />
-      <SelectOption 
+      <SelectOption
         optionKey="wordBoundaryKind"
         values={[WordBoundaryKindValues.DefaultBoundaries, WordBoundaryKindValues.Simple]}
         options={options}
@@ -129,7 +129,7 @@ function OptionsPanel({
   </div>
 }
 
-function CheckboxOption({ 
+function CheckboxOption({
   optionKey,
   openHelpId,
   setOpenHelpId,
@@ -148,23 +148,23 @@ function CheckboxOption({
       {optionKey}
     </label>
     <div class="option-checkbox-controls">
-    <input
-      id={inputId}
-      type="checkbox"
-      checked={!!options[optionKey]}
-      onChange={() => setOptions((prev) => ({ ...prev, [optionKey]: !prev[optionKey] }))}
-    />
-    <HelpPopover
-      optionName={optionKey}
-      description={OPTION_HELP[optionKey]}
-      openHelpId={openHelpId}
-      setOpenHelpId={setOpenHelpId}
-    />
+      <input
+        id={inputId}
+        type="checkbox"
+        checked={!!options[optionKey]}
+        onChange={() => setOptions((prev) => ({ ...prev, [optionKey]: !prev[optionKey] }))}
+      />
+      <HelpPopover
+        optionName={optionKey}
+        description={OPTION_HELP[optionKey]}
+        openHelpId={openHelpId}
+        setOpenHelpId={setOpenHelpId}
+      />
     </div>
   </div>
 }
 
-function SelectOption({ 
+function SelectOption({
   optionKey,
   values,
   openHelpId,
@@ -181,8 +181,24 @@ function SelectOption({
 }) {
   const inputId = `opt-${optionKey}`;
   return <div class="option-select-row">
-    <div class="option-select-header">
-      <label class="option-select-label" for={inputId}>{optionKey}</label>
+    <label class="option-select-label" for={inputId}>{optionKey}</label>
+    <div class="option-select-container">
+      <select
+        id={inputId}
+        value={options[optionKey] as string}
+        onChange={(e) =>
+          setOptions((prev) => ({
+            ...prev,
+            [optionKey]: (e.currentTarget as HTMLSelectElement).value as any,
+          }))
+        }
+      >
+        {values.map((value) => (
+          <option key={value} value={value}>
+            {value}
+          </option>
+        ))}
+      </select>
       <HelpPopover
         optionName={optionKey}
         description={OPTION_HELP[optionKey]}
@@ -190,22 +206,6 @@ function SelectOption({
         setOpenHelpId={setOpenHelpId}
       />
     </div>
-    <select
-      id={inputId}
-      value={options[optionKey] as string}
-      onChange={(e) =>
-        setOptions((prev) => ({
-          ...prev,
-          [optionKey]: (e.currentTarget as HTMLSelectElement).value as any,
-        }))
-      }
-    >
-      {values.map((value) => (
-        <option key={value} value={value}>
-          {value}
-        </option>
-      ))}
-    </select>
   </div>
 }
 

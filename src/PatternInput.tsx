@@ -1,6 +1,7 @@
+import { createContext } from "preact";
 import { ReactNode } from "preact/compat";
-import { MatchingSemanticsTag, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorTag, RepetitionBehaviorValues, WordBoundaryKindTag, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
-import { Dispatch, StateUpdater, useEffect, useState } from "preact/hooks";
+import { MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
+import { Dispatch, StateUpdater, useContext, useEffect, useState } from "preact/hooks";
 
 const CHECKBOX_OPTION_KEYS = [
   "anchorsMatchLineEndings",
@@ -13,6 +14,18 @@ const CHECKBOX_OPTION_KEYS = [
 ] satisfies RegexOptionKey[];
 
 type RegexOptionKey = keyof RegexOptions;
+type CheckboxOptionKey = (typeof CHECKBOX_OPTION_KEYS)[number];
+type SelectOptionKey = Exclude<RegexOptionKey, CheckboxOptionKey>;
+
+type OptionsContextValue = {
+  options: RegexOptions;
+  openHelpId: RegexOptionKey | null;
+  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
+  toggleCheckboxOption: (optionKey: CheckboxOptionKey) => void;
+  updateOption: <K extends RegexOptionKey>(optionKey: K, value: RegexOptions[K]) => void;
+};
+
+const OptionsContext = createContext<OptionsContextValue>({} as OptionsContextValue);
 
 const OPTION_HELP: Record<RegexOptionKey, string> = {
   anchorsMatchLineEndings: "Makes ^ and $ match at line boundaries, not only at the start and end of the entire input.",
@@ -72,6 +85,12 @@ function OptionsPanel({
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
 }): ReactNode {
   const [openHelpId, setOpenHelpId] = useState<RegexOptionKey | null>(null);
+  const toggleCheckboxOption = (optionKey: CheckboxOptionKey) => {
+    setOptions((prev) => ({ ...prev, [optionKey]: !prev[optionKey] }));
+  };
+  const updateOption = <K extends RegexOptionKey>(optionKey: K, value: RegexOptions[K]) => {
+    setOptions((prev) => ({ ...prev, [optionKey]: value }));
+  };
 
   useEffect(() => {
     const closeOnOutsideClick = (event: MouseEvent) => {
@@ -84,64 +103,45 @@ function OptionsPanel({
     return () => document.removeEventListener("click", closeOnOutsideClick);
   }, []);
 
-  return <div
-    id="options-popup"
-    class="options-popup"
+  return <OptionsContext.Provider
+    value={{ options, openHelpId, setOpenHelpId, toggleCheckboxOption, updateOption }}
   >
-    <div class="options-checkboxes">
-      {CHECKBOX_OPTION_KEYS.map((key) =>
-        <CheckboxOption
-          key={key}
-          optionKey={key}
-          options={options}
-          setOptions={setOptions}
-          openHelpId={openHelpId}
-          setOpenHelpId={setOpenHelpId}
+    <div
+      id="options-popup"
+      class="options-popup"
+    >
+      <div class="options-checkboxes">
+        {CHECKBOX_OPTION_KEYS.map((key) =>
+          <CheckboxOption
+            key={key}
+            optionKey={key}
+          />
+        )}
+      </div>
+      <div class="options-selects">
+        <SelectOption
+          optionKey="matchingSemantics"
+          values={[MatchingSemanticsValues.GraphemeCluster, MatchingSemanticsValues.UnicodeScalar]}
         />
-      )}
+        <SelectOption
+          optionKey="repetitionBehavior"
+          values={[RepetitionBehaviorValues.Eager, RepetitionBehaviorValues.Possessive, RepetitionBehaviorValues.Reluctant]}
+        />
+        <SelectOption
+          optionKey="wordBoundaryKind"
+          values={[WordBoundaryKindValues.DefaultBoundaries, WordBoundaryKindValues.Simple]}
+        />
+      </div>
     </div>
-    <div class="options-selects">
-      <SelectOption
-        optionKey="matchingSemantics"
-        values={[MatchingSemanticsValues.GraphemeCluster, MatchingSemanticsValues.UnicodeScalar]}
-        options={options}
-        setOptions={setOptions}
-        openHelpId={openHelpId}
-        setOpenHelpId={setOpenHelpId}
-      />
-      <SelectOption
-        optionKey="repetitionBehavior"
-        values={[RepetitionBehaviorValues.Eager, RepetitionBehaviorValues.Possessive, RepetitionBehaviorValues.Reluctant]}
-        options={options}
-        setOptions={setOptions}
-        openHelpId={openHelpId}
-        setOpenHelpId={setOpenHelpId}
-      />
-      <SelectOption
-        optionKey="wordBoundaryKind"
-        values={[WordBoundaryKindValues.DefaultBoundaries, WordBoundaryKindValues.Simple]}
-        options={options}
-        setOptions={setOptions}
-        openHelpId={openHelpId}
-        setOpenHelpId={setOpenHelpId}
-      />
-    </div>
-  </div>
+  </OptionsContext.Provider>
 }
 
 function CheckboxOption({
   optionKey,
-  openHelpId,
-  setOpenHelpId,
-  options,
-  setOptions,
 }: {
-  optionKey: RegexOptionKey;
-  options: RegexOptions;
-  setOptions: Dispatch<StateUpdater<RegexOptions>>;
-  openHelpId: RegexOptionKey | null;
-  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
+  optionKey: CheckboxOptionKey;
 }) {
+  const { options, toggleCheckboxOption } = useOptionsContext();
   const inputId = `opt-${optionKey}`;
   return <div key={optionKey} class="option-checkbox-item">
     <label for={inputId} class="option-checkbox-label">
@@ -152,33 +152,24 @@ function CheckboxOption({
         id={inputId}
         type="checkbox"
         checked={!!options[optionKey]}
-        onChange={() => setOptions((prev) => ({ ...prev, [optionKey]: !prev[optionKey] }))}
+        onChange={() => toggleCheckboxOption(optionKey)}
       />
       <HelpPopover
         optionName={optionKey}
         description={OPTION_HELP[optionKey]}
-        openHelpId={openHelpId}
-        setOpenHelpId={setOpenHelpId}
       />
     </div>
   </div>
 }
 
-function SelectOption({
+function SelectOption<K extends SelectOptionKey>({
   optionKey,
   values,
-  openHelpId,
-  setOpenHelpId,
-  options,
-  setOptions,
 }: {
-  optionKey: RegexOptionKey;
-  values: string[];
-  options: RegexOptions;
-  setOptions: Dispatch<StateUpdater<RegexOptions>>;
-  openHelpId: RegexOptionKey | null;
-  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
+  optionKey: K;
+  values: RegexOptions[K][];
 }) {
+  const { options, updateOption } = useOptionsContext();
   const inputId = `opt-${optionKey}`;
   return <div class="option-select-row">
     <label class="option-select-label" for={inputId}>{optionKey}</label>
@@ -186,12 +177,7 @@ function SelectOption({
       <select
         id={inputId}
         value={options[optionKey] as string}
-        onChange={(e) =>
-          setOptions((prev) => ({
-            ...prev,
-            [optionKey]: (e.currentTarget as HTMLSelectElement).value as any,
-          }))
-        }
+        onChange={(e) => updateOption(optionKey, (e.currentTarget as HTMLSelectElement).value as RegexOptions[K])}
       >
         {values.map((value) => (
           <option key={value} value={value}>
@@ -202,8 +188,6 @@ function SelectOption({
       <HelpPopover
         optionName={optionKey}
         description={OPTION_HELP[optionKey]}
-        openHelpId={openHelpId}
-        setOpenHelpId={setOpenHelpId}
       />
     </div>
   </div>
@@ -212,14 +196,11 @@ function SelectOption({
 function HelpPopover({
   optionName,
   description,
-  openHelpId,
-  setOpenHelpId,
 }: {
   optionName: RegexOptionKey;
   description: string;
-  openHelpId: RegexOptionKey | null;
-  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
 }): ReactNode {
+  const { openHelpId, setOpenHelpId } = useOptionsContext();
   const isOpen = openHelpId === optionName;
 
   return <span
@@ -243,3 +224,5 @@ function HelpPopover({
     </span>
   </span>
 }
+
+const useOptionsContext = () => useContext(OptionsContext);

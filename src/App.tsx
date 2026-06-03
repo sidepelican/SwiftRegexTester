@@ -51,7 +51,7 @@ export function App() {
     highlightParts: HighlightPart[];
     matches: RegexMatch[];
   }>(() => {
-    if (!runtime.value || !pattern || !input) {
+    if (!runtime.value || !pattern) {
       return {
         patternError: '',
         highlightParts: input ? [{ text: input, marked: false }] : [],
@@ -70,6 +70,14 @@ export function App() {
       }
     }
 
+    if (!input) {
+      return {
+        patternError: '',
+        highlightParts: [],
+        matches: [] as RegexMatch[],
+      }
+    }
+
     const regexResult = swiftRegex.result(input);
     return {
       patternError: '',
@@ -81,20 +89,19 @@ export function App() {
   return (
     <main>
       <section class="inputs">
-          <PatternInput
-            pattern={pattern}
-            setPattern={setPattern}
-            patternError={result.patternError}
-            options={options}
-            setOptions={setOptions}
-          />
+        <PatternInput
+          pattern={pattern}
+          setPattern={setPattern}
+          patternError={result.patternError}
+          options={options}
+          setOptions={setOptions}
+        />
 
-          <TestInput input={input} setInput={setInput} highlightParts={result.highlightParts} />
+        <TestInput input={input} setInput={setInput} highlightParts={result.highlightParts} />
       </section>
 
       <TestResult
         loadState={runtime}
-        hasInput={input.length > 0}
         result={result}
       />
     </main>

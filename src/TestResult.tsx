@@ -4,11 +4,9 @@ import { LoadState } from './LoadState';
 
 export function TestResult({
   loadState,
-  hasInput,
   result,
 }: {
   loadState: LoadState<unknown>;
-  hasInput: boolean;
   result: {
     matches: RegexMatch[];
   }
@@ -23,12 +21,11 @@ export function TestResult({
         <code>{loadState.error}</code>
       </p>
     )}
-    {!loadState.loading && !loadState.error && !hasInput && <p class="no-match">Enter text to test</p>}
 
-    { !loadState.loading && !loadState.error && hasInput && 
+    {!loadState.loading && !loadState.error &&
       <div class="match-details">
-        { result.matches.length === 0 && <p class="no-match">No matches</p>}
-        { result.matches.length > 0 && (
+        {result.matches.length === 0 && <p class="no-match">No matches</p>}
+        {result.matches.length > 0 && (
           <>
             <p class="match-count">{result.matches.length} match(es)</p>
             <ol class="match-list">

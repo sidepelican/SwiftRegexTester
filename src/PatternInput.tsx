@@ -65,15 +65,23 @@ export function PatternInput({
       value={pattern}
       onInput={(event) => setPattern((event.currentTarget as HTMLInputElement).value)}
     />
-    {patternError && <div id="pattern-error" class="field-error" role="alert">
-      {patternError}
-    </div>}
-    <details class="options-accordion">
-      <summary class="options-btn">Options</summary>
-      <div class="options-panel">
-        <OptionsPanel options={options} setOptions={setOptions} />
-      </div>
-    </details>
+    <div class="pattern-lower">
+      {patternError &&
+        <div
+          id="pattern-error" class="field-error pattern-lower-item"
+          role="alert"
+          style={{ paddingInlineEnd: "5.5rem" }}
+        >
+          {patternError}
+        </div>
+      }
+      <details class="options-accordion pattern-lower-item">
+        <summary class="options-btn">Options</summary>
+        <div class="options-panel">
+          <OptionsPanel options={options} setOptions={setOptions} />
+        </div>
+      </details>
+    </div>
   </div>
 }
 

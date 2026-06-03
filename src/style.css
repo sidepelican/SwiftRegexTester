@@ -146,6 +146,16 @@ input[type='text']:focus {
   background: color-mix(in srgb, #4a90d9 35%, transparent);
 }
 
+.pattern-lower {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.pattern-lower-item {
+  grid-area: 1 / 1 / 2 / 2;
+}
+
 .field-error {
   min-height: 1.2rem;
   font-size: 0.8rem;

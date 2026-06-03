@@ -75,3 +75,16 @@ private func defaultOptions(
     #expect(matches.count == 1)
     #expect(matches[0].value == "AbC")
 }
+
+@Test func highlightPartsPreserveComplexGraphemeClusters() throws {
+    let regex = try SwiftRegex(pattern: "👨‍👩‍👧‍👦", options: defaultOptions())
+    let parts = regex.highlightParts(of: "a👨‍👩‍👧‍👦b")
+
+    #expect(parts.count == 3)
+    #expect(parts[0].text == "a")
+    #expect(parts[0].marked == false)
+    #expect(parts[1].text == "👨‍👩‍👧‍👦")
+    #expect(parts[1].marked == true)
+    #expect(parts[2].text == "b")
+    #expect(parts[2].marked == false)
+}

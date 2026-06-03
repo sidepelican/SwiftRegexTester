@@ -14,6 +14,11 @@ import JavaScriptKit
     var groups: [CaptureGroup]
 }
 
+@JS struct HighlightPart {
+    var text: String
+    var marked: Bool
+}
+
 @JS enum MatchingSemantics: String {
     case graphemeCluster
     case unicodeScalar
@@ -91,6 +96,34 @@ import JavaScriptKit
             }
             return RegexMatch(value: value, start: start, end: end, groups: groups)
         }
+    }
+
+    @JS func highlightParts(of input: String) -> [HighlightPart] {
+        var parts: [HighlightPart] = []
+        var currentIndex = input.startIndex
+
+        for match in input.matches(of: regex) {
+            if currentIndex < match.range.lowerBound {
+                parts.append(HighlightPart(
+                    text: String(input[currentIndex..<match.range.lowerBound]),
+                    marked: false
+                ))
+            }
+            parts.append(HighlightPart(
+                text: String(input[match.range]),
+                marked: true
+            ))
+            currentIndex = match.range.upperBound
+        }
+
+        if currentIndex < input.endIndex {
+            parts.append(HighlightPart(
+                text: String(input[currentIndex..<input.endIndex]),
+                marked: false
+            ))
+        }
+
+        return parts
     }
 }
 

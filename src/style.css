@@ -278,8 +278,8 @@ code {
 }
 
 .options-btn {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  margin-inline-start: auto;
   gap: 0.35rem;
   font-size: 0.78rem;
   font-weight: 500;

@@ -75,8 +75,7 @@ label {
   font-weight: 600;
 }
 
-input[type='text'],
-textarea {
+input[type='text'] {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
@@ -94,6 +93,58 @@ textarea:focus {
   outline: 2px solid #4a90d9;
   outline-offset: 0;
   border-color: transparent;
+}
+
+.textarea-highlight-wrap {
+  position: relative;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+  border-radius: 0.5rem;
+  background: Canvas;
+}
+
+.textarea-highlight-wrap:focus-within {
+  outline: 2px solid #4a90d9;
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.textarea-highlight,
+.textarea-editor {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: calc((0.9rem * 1.7 * 6) + 1.2rem);
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.textarea-highlight {
+  color: CanvasText;
+  pointer-events: none;
+}
+
+.textarea-editor {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  border: 0;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: CanvasText;
+}
+
+.textarea-editor:focus {
+  outline: none;
+}
+
+.textarea-editor::selection {
+  background: color-mix(in srgb, #4a90d9 35%, transparent);
 }
 
 .field-error {

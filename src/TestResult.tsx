@@ -1,5 +1,4 @@
-import { Fragment } from 'preact';
-import { HighlightPart, RegexMatch } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
+import { RegexMatch } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
 import { ReactNode } from 'preact/compat';
 import { LoadState } from './LoadState';
 
@@ -11,29 +10,20 @@ export function TestResult({
   loadState: LoadState<unknown>;
   hasInput: boolean;
   result: {
-    highlightParts: HighlightPart[];
     matches: RegexMatch[];
   }
 }): ReactNode {
   return <section class="results">
     <h2>結果</h2>
-    <div class="highlighted-text" aria-live="polite">
-      {loadState.loading && <span class="loading">WebAssembly を読み込み中…</span>}
-      {!loadState.loading && loadState.error && (
-        <span class="load-error">
-          Swift/Wasm の読み込みに失敗しました。
-          <br />
-          <code>{loadState.error}</code>
-        </span>
-      )}
-      {!loadState.loading && !loadState.error && !hasInput && (
-        <span class="placeholder">（空文字列）</span>
-      )}
-      {!loadState.loading && !loadState.error &&
-        result.highlightParts.map((part, index) =>
-          part.marked ? <mark key={index}>{part.text}</mark> : <Fragment key={index}>{part.text}</Fragment>,
-        )}
-    </div>
+    {loadState.loading && <p class="loading">WebAssembly を読み込み中…</p>}
+    {!loadState.loading && loadState.error && (
+      <p class="load-error">
+        Swift/Wasm の読み込みに失敗しました。
+        <br />
+        <code>{loadState.error}</code>
+      </p>
+    )}
+    {!loadState.loading && !loadState.error && !hasInput && <p class="no-match">テスト文字列を入力してください</p>}
 
     { !loadState.loading && !loadState.error && hasInput && 
       <div class="match-details">

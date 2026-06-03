@@ -89,7 +89,7 @@ export function App() {
             setOptions={setOptions}
           />
 
-          <TestInput input={input} setInput={setInput} />
+          <TestInput input={input} setInput={setInput} highlightParts={result.highlightParts} />
       </section>
 
       <TestResult

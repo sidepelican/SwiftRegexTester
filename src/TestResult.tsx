@@ -1,6 +1,5 @@
 import { Fragment } from 'preact';
-import { RegexMatch } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
-import { HighlightPart } from "./HighlightPart";
+import { HighlightPart, RegexMatch } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
 import { ReactNode } from 'preact/compat';
 import { LoadState } from './LoadState';
 

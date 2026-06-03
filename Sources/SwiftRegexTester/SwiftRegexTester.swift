@@ -83,14 +83,6 @@ import JavaScriptKit
         }
     }
 
-    @JS func matches(of input: String) -> [RegexMatch] {
-        result(of: input).matches
-    }
-
-    @JS func highlightParts(of input: String) -> [HighlightPart] {
-        result(of: input).highlightParts
-    }
-
     @JS func result(of input: String) -> RegexResult {
         var matches: [RegexMatch] = []
         var parts: [HighlightPart] = []

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
-import type { HighlightPart } from './HighlightPart';
+import { Exports, HighlightPart, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { TestResult } from './TestResult';
 import { PatternInput } from './PatternInput';
 import { TestInput } from './TestInput';

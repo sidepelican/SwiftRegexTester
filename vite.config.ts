@@ -1,29 +1,16 @@
-import { defineConfig, type Plugin } from 'vite'
-
-function wasmPreload(): Plugin {
-  return {
-    name: 'wasm-preload',
-    transformIndexHtml: {
-      order: 'post',
-      handler(_html, ctx) {
-        if (!ctx.bundle) return []
-        return Object.values(ctx.bundle)
-          .filter(chunk => chunk.fileName.endsWith('.wasm'))
-          .map(chunk => ({
-            tag: 'link' as const,
-            attrs: {
-              rel: 'preload',
-              as: 'fetch',
-              crossorigin: '',
-              href: '/' + chunk.fileName,
-            },
-            injectTo: 'head' as const,
-          }))
-      },
-    },
-  }
-}
+import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [wasmPreload()],
+  build: {
+    rollupOptions: {
+      output: {
+        assetFileNames(assetInfo) {
+          if (assetInfo.names?.some(n => n.endsWith('.wasm'))) {
+            return 'assets/[name][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
+        },
+      },
+    },
+  },
 })

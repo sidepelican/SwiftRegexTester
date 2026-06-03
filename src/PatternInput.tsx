@@ -10,9 +10,11 @@ const CHECKBOX_OPTION_KEYS = [
   "asciiOnlyWordCharacters",
   "dotMatchesNewlines",
   "ignoresCase",
-] as const;
+] satisfies RegexOptionKey[];
 
-const OPTION_HELP: Record<keyof RegexOptions, string> = {
+type RegexOptionKey = keyof RegexOptions;
+
+const OPTION_HELP: Record<RegexOptionKey, string> = {
   anchorsMatchLineEndings: "Makes ^ and $ match at line boundaries, not only at the start and end of the entire input.",
   asciiOnlyCharacterClasses: "Limits regex character classes such as \\w, \\d, and \\s to ASCII behavior.",
   asciiOnlyDigits: "Treats digit matching as ASCII-only (0-9) instead of full Unicode decimal digits.",
@@ -68,8 +70,8 @@ function OptionsPanel({
 }: {
   options: RegexOptions;
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
- }): ReactNode {
-  const [openHelpId, setOpenHelpId] = useState<string | null>(null);
+}): ReactNode {
+  const [openHelpId, setOpenHelpId] = useState<RegexOptionKey | null>(null);
 
   useEffect(() => {
     const closeOnOutsideClick = (event: MouseEvent) => {
@@ -87,104 +89,123 @@ function OptionsPanel({
     class="options-popup"
   >
     <div class="options-checkboxes">
-      {CHECKBOX_OPTION_KEYS.map((key) => {
-        const inputId = `opt-${key}`;
-        return <div key={key} class="option-checkbox-item">
-          <label for={inputId} class="option-checkbox-label">
-            {key}
-          </label>
-          <div class="option-checkbox-controls">
-          <input
-            id={inputId}
-            type="checkbox"
-            checked={options[key]}
-            onChange={() => setOptions((prev) => ({ ...prev, [key]: !prev[key] }))}
-          />
-          <HelpPopover
-            optionName={key}
-            description={OPTION_HELP[key]}
-            openHelpId={openHelpId}
-            setOpenHelpId={setOpenHelpId}
-          />
-          </div>
-        </div>
-      })}
+      {CHECKBOX_OPTION_KEYS.map((key) => 
+        <CheckboxOption 
+          key={key}
+          optionKey={key} 
+          options={options} 
+          setOptions={setOptions} 
+          openHelpId={openHelpId} 
+          setOpenHelpId={setOpenHelpId} 
+        />
+      )}
     </div>
     <div class="options-selects">
-      <div class="option-select-row">
-        <div class="option-select-header">
-          <label class="option-select-label" for="opt-matchingSemantics">matchingSemantics</label>
-          <HelpPopover
-            optionName="matchingSemantics"
-            description={OPTION_HELP.matchingSemantics}
-            openHelpId={openHelpId}
-            setOpenHelpId={setOpenHelpId}
-          />
-        </div>
-        <select
-          id="opt-matchingSemantics"
-          value={options.matchingSemantics}
-          onChange={(e) =>
-            setOptions((prev) => ({
-              ...prev,
-              matchingSemantics: (e.currentTarget as HTMLSelectElement).value as MatchingSemanticsTag,
-            }))
-          }
-        >
-          <option value={MatchingSemanticsValues.GraphemeCluster}>{MatchingSemanticsValues.GraphemeCluster}</option>
-          <option value={MatchingSemanticsValues.UnicodeScalar}>{MatchingSemanticsValues.UnicodeScalar}</option>
-        </select>
-      </div>
-      <div class="option-select-row">
-        <div class="option-select-header">
-          <label class="option-select-label" for="opt-repetitionBehavior">repetitionBehavior</label>
-          <HelpPopover
-            optionName="repetitionBehavior"
-            description={OPTION_HELP.repetitionBehavior}
-            openHelpId={openHelpId}
-            setOpenHelpId={setOpenHelpId}
-          />
-        </div>
-        <select
-          id="opt-repetitionBehavior"
-          value={options.repetitionBehavior}
-          onChange={(e) =>
-            setOptions((prev) => ({
-              ...prev,
-              repetitionBehavior: (e.currentTarget as HTMLSelectElement).value as RepetitionBehaviorTag,
-            }))
-          }
-        >
-          <option value={RepetitionBehaviorValues.Eager}>{RepetitionBehaviorValues.Eager}</option>
-          <option value={RepetitionBehaviorValues.Possessive}>{RepetitionBehaviorValues.Possessive}</option>
-          <option value={RepetitionBehaviorValues.Reluctant}>{RepetitionBehaviorValues.Reluctant}</option>
-        </select>
-      </div>
-      <div class="option-select-row">
-        <div class="option-select-header">
-          <label class="option-select-label" for="opt-wordBoundaryKind">wordBoundaryKind</label>
-          <HelpPopover
-            optionName="wordBoundaryKind"
-            description={OPTION_HELP.wordBoundaryKind}
-            openHelpId={openHelpId}
-            setOpenHelpId={setOpenHelpId}
-          />
-        </div>
-        <select
-          id="opt-wordBoundaryKind"
-          value={options.wordBoundaryKind}
-          onChange={(e) =>
-            setOptions((prev) => ({
-              ...prev,
-              wordBoundaryKind: (e.currentTarget as HTMLSelectElement).value as WordBoundaryKindTag,
-            }))
-          }
-        >
-          <option value={WordBoundaryKindValues.DefaultBoundaries}>{WordBoundaryKindValues.DefaultBoundaries}</option>
-          <option value={WordBoundaryKindValues.Simple}>{WordBoundaryKindValues.Simple}</option>
-        </select>
-      </div>
+      <SelectOption 
+        optionKey="matchingSemantics"
+        values={[MatchingSemanticsValues.GraphemeCluster, MatchingSemanticsValues.UnicodeScalar]}
+        options={options}
+        setOptions={setOptions}
+        openHelpId={openHelpId}
+        setOpenHelpId={setOpenHelpId}
+      />
+      <SelectOption 
+        optionKey="repetitionBehavior"
+        values={[RepetitionBehaviorValues.Eager, RepetitionBehaviorValues.Possessive, RepetitionBehaviorValues.Reluctant]}
+        options={options}
+        setOptions={setOptions}
+        openHelpId={openHelpId}
+        setOpenHelpId={setOpenHelpId}
+      />
+      <SelectOption 
+        optionKey="wordBoundaryKind"
+        values={[WordBoundaryKindValues.DefaultBoundaries, WordBoundaryKindValues.Simple]}
+        options={options}
+        setOptions={setOptions}
+        openHelpId={openHelpId}
+        setOpenHelpId={setOpenHelpId}
+      />
     </div>
+  </div>
+}
+
+function CheckboxOption({ 
+  optionKey,
+  openHelpId,
+  setOpenHelpId,
+  options,
+  setOptions,
+}: {
+  optionKey: RegexOptionKey;
+  options: RegexOptions;
+  setOptions: Dispatch<StateUpdater<RegexOptions>>;
+  openHelpId: RegexOptionKey | null;
+  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
+}) {
+  const inputId = `opt-${optionKey}`;
+  return <div key={optionKey} class="option-checkbox-item">
+    <label for={inputId} class="option-checkbox-label">
+      {optionKey}
+    </label>
+    <div class="option-checkbox-controls">
+    <input
+      id={inputId}
+      type="checkbox"
+      checked={!!options[optionKey]}
+      onChange={() => setOptions((prev) => ({ ...prev, [optionKey]: !prev[optionKey] }))}
+    />
+    <HelpPopover
+      optionName={optionKey}
+      description={OPTION_HELP[optionKey]}
+      openHelpId={openHelpId}
+      setOpenHelpId={setOpenHelpId}
+    />
+    </div>
+  </div>
+}
+
+function SelectOption({ 
+  optionKey,
+  values,
+  openHelpId,
+  setOpenHelpId,
+  options,
+  setOptions,
+}: {
+  optionKey: RegexOptionKey;
+  values: string[];
+  options: RegexOptions;
+  setOptions: Dispatch<StateUpdater<RegexOptions>>;
+  openHelpId: RegexOptionKey | null;
+  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
+}) {
+  const inputId = `opt-${optionKey}`;
+  return <div class="option-select-row">
+    <div class="option-select-header">
+      <label class="option-select-label" for={inputId}>{optionKey}</label>
+      <HelpPopover
+        optionName={optionKey}
+        description={OPTION_HELP[optionKey]}
+        openHelpId={openHelpId}
+        setOpenHelpId={setOpenHelpId}
+      />
+    </div>
+    <select
+      id={inputId}
+      value={options[optionKey] as string}
+      onChange={(e) =>
+        setOptions((prev) => ({
+          ...prev,
+          [optionKey]: (e.currentTarget as HTMLSelectElement).value as any,
+        }))
+      }
+    >
+      {values.map((value) => (
+        <option key={value} value={value}>
+          {value}
+        </option>
+      ))}
+    </select>
   </div>
 }
 
@@ -194,10 +215,10 @@ function HelpPopover({
   openHelpId,
   setOpenHelpId,
 }: {
-  optionName: string;
+  optionName: RegexOptionKey;
   description: string;
-  openHelpId: string | null;
-  setOpenHelpId: Dispatch<StateUpdater<string | null>>;
+  openHelpId: RegexOptionKey | null;
+  setOpenHelpId: Dispatch<StateUpdater<RegexOptionKey | null>>;
 }): ReactNode {
   const isOpen = openHelpId === optionName;
 

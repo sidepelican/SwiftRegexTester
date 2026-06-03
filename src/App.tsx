@@ -71,11 +71,11 @@ export function App() {
       }
     }
 
-    const matches = swiftRegex.matches(input);
+    const regexResult = swiftRegex.result(input);
     return {
       patternError: '',
-      highlightParts: swiftRegex.highlightParts(input),
-      matches,
+      highlightParts: regexResult.highlightParts,
+      matches: regexResult.matches,
     }
   }, [input, pattern, runtime, options])
 

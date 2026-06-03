@@ -88,3 +88,21 @@ private func defaultOptions(
     #expect(parts[2].text == "b")
     #expect(parts[2].marked == false)
 }
+
+@Test func resultContainsMatchesAndHighlightParts() throws {
+    let regex = try SwiftRegex(pattern: "\\d+", options: defaultOptions())
+    let result = regex.result(of: "abc 123 def 456")
+
+    #expect(result.matches.count == 2)
+    #expect(result.matches[0].value == "123")
+    #expect(result.matches[1].value == "456")
+    #expect(result.highlightParts.count == 4)
+    #expect(result.highlightParts[0].text == "abc ")
+    #expect(result.highlightParts[0].marked == false)
+    #expect(result.highlightParts[1].text == "123")
+    #expect(result.highlightParts[1].marked == true)
+    #expect(result.highlightParts[2].text == " def ")
+    #expect(result.highlightParts[2].marked == false)
+    #expect(result.highlightParts[3].text == "456")
+    #expect(result.highlightParts[3].marked == true)
+}

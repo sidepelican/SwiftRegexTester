@@ -20,10 +20,10 @@ export function TestInput({
   };
 
   return <div class="field">
-    <label for="teststr">テスト文字列</label>
+    <label for="teststr">Test string</label>
     <div class="textarea-highlight-wrap">
       <div class="textarea-highlight" ref={highlightRef} aria-hidden="true">
-        {input.length === 0 && <span class="placeholder">テストする文字列を入力してください</span>}
+        {input.length === 0 && <span class="placeholder">Enter text to test</span>}
         {highlightParts.map((part, index) =>
           part.marked ? <mark key={index}>{part.text}</mark> : <Fragment key={index}>{part.text}</Fragment>,
         )}

@@ -14,23 +14,23 @@ export function TestResult({
   }
 }): ReactNode {
   return <section class="results">
-    <h2>結果</h2>
-    {loadState.loading && <p class="loading">WebAssembly を読み込み中…</p>}
+    <h2>Results</h2>
+    {loadState.loading && <p class="loading">Loading WebAssembly…</p>}
     {!loadState.loading && loadState.error && (
       <p class="load-error">
-        Swift/Wasm の読み込みに失敗しました。
+        Failed to load Swift/Wasm.
         <br />
         <code>{loadState.error}</code>
       </p>
     )}
-    {!loadState.loading && !loadState.error && !hasInput && <p class="no-match">テスト文字列を入力してください</p>}
+    {!loadState.loading && !loadState.error && !hasInput && <p class="no-match">Enter text to test</p>}
 
     { !loadState.loading && !loadState.error && hasInput && 
       <div class="match-details">
-        { result.matches.length === 0 && <p class="no-match">マッチなし</p>}
+        { result.matches.length === 0 && <p class="no-match">No matches</p>}
         { result.matches.length > 0 && (
           <>
-            <p class="match-count">{result.matches.length} 件マッチ</p>
+            <p class="match-count">{result.matches.length} match(es)</p>
             <ol class="match-list">
               {result.matches.map((match, matchIndex) => (
                 <li key={matchIndex}>

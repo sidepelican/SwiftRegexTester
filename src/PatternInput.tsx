@@ -1,6 +1,53 @@
 import { ReactNode } from "preact/compat";
 import { MatchingSemanticsTag, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorTag, RepetitionBehaviorValues, WordBoundaryKindTag, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
-import { Dispatch, StateUpdater } from "preact/hooks";
+import { Dispatch, StateUpdater, useEffect, useState } from "preact/hooks";
+
+type OptionHelp = {
+  description: string;
+};
+
+const CHECKBOX_OPTION_KEYS = [
+  "anchorsMatchLineEndings",
+  "asciiOnlyCharacterClasses",
+  "asciiOnlyDigits",
+  "asciiOnlyWhitespace",
+  "asciiOnlyWordCharacters",
+  "dotMatchesNewlines",
+  "ignoresCase",
+] as const;
+
+const OPTION_HELP: Record<keyof RegexOptions, OptionHelp> = {
+  anchorsMatchLineEndings: {
+    description: "Makes ^ and $ match at line boundaries, not only at the start and end of the entire input.",
+  },
+  asciiOnlyCharacterClasses: {
+    description: "Limits regex character classes such as \\w, \\d, and \\s to ASCII behavior.",
+  },
+  asciiOnlyDigits: {
+    description: "Treats digit matching as ASCII-only (0-9) instead of full Unicode decimal digits.",
+  },
+  asciiOnlyWhitespace: {
+    description: "Treats whitespace matching as ASCII-only instead of the full Unicode whitespace set.",
+  },
+  asciiOnlyWordCharacters: {
+    description: "Treats word characters as ASCII-only (letters, digits, underscore) for word-related matching.",
+  },
+  dotMatchesNewlines: {
+    description: "Allows . to match newline characters too, instead of stopping at line breaks.",
+  },
+  ignoresCase: {
+    description: "Enables case-insensitive matching.",
+  },
+  matchingSemantics: {
+    description: "Chooses whether matching works by grapheme clusters (user-perceived characters) or Unicode scalars.",
+  },
+  repetitionBehavior: {
+    description: "Controls quantifier behavior: eager (greedy), reluctant (lazy), or possessive (no backtracking).",
+  },
+  wordBoundaryKind: {
+    description: "Selects how word boundaries are determined (default Unicode-aware boundaries or simpler ones).",
+  },
+};
 
 export function PatternInput({
   pattern,
@@ -16,11 +63,11 @@ export function PatternInput({
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
 }): ReactNode {
   return <div class="field">
-    <label for="pattern">正規表現パターン</label>
+    <label for="pattern">Regex pattern</label>
     <input
       id="pattern"
       type="text"
-      placeholder={'例: (\\w+)@(\\w+)'}
+      placeholder={"Example: (\\w+)@(\\w+)"}
       spellcheck={false}
       autoComplete="off"
       autoCapitalize="none"
@@ -31,7 +78,7 @@ export function PatternInput({
       {patternError}
     </div>}
     <details class="options-accordion">
-      <summary class="options-btn">オプション</summary>
+    <summary class="options-btn">Options</summary>
       <div class="options-panel">
         <OptionsPanel options={options} setOptions={setOptions} />
       </div>
@@ -46,35 +93,58 @@ function OptionsPanel({
   options: RegexOptions;
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
  }): ReactNode {
+  const [openHelpId, setOpenHelpId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Element)) return;
+      if (event.target.closest(".option-help")) return;
+      setOpenHelpId(null);
+    };
+
+    document.addEventListener("click", closeOnOutsideClick);
+    return () => document.removeEventListener("click", closeOnOutsideClick);
+  }, []);
+
   return <div
     id="options-popup"
     class="options-popup"
   >
     <div class="options-checkboxes">
-      {(
-        [
-          'anchorsMatchLineEndings',
-          'asciiOnlyCharacterClasses',
-          'asciiOnlyDigits',
-          'asciiOnlyWhitespace',
-          'asciiOnlyWordCharacters',
-          'dotMatchesNewlines',
-          'ignoresCase',
-        ] as const
-      ).map((key) => (
-        <label key={key} class="option-checkbox-label">
+      {CHECKBOX_OPTION_KEYS.map((key) => {
+        const inputId = `opt-${key}`;
+        return <div key={key} class="option-checkbox-item">
+          <label for={inputId} class="option-checkbox-label">
+            {key}
+          </label>
+          <div class="option-checkbox-controls">
           <input
+            id={inputId}
             type="checkbox"
             checked={options[key]}
             onChange={() => setOptions((prev) => ({ ...prev, [key]: !prev[key] }))}
           />
-          {key}
-        </label>
-      ))}
+          <HelpPopover
+            optionName={key}
+            description={OPTION_HELP[key].description}
+            openHelpId={openHelpId}
+            setOpenHelpId={setOpenHelpId}
+          />
+          </div>
+        </div>
+      })}
     </div>
     <div class="options-selects">
       <div class="option-select-row">
-        <label class="option-select-label" for="opt-matchingSemantics">matchingSemantics</label>
+        <div class="option-select-header">
+          <label class="option-select-label" for="opt-matchingSemantics">matchingSemantics</label>
+          <HelpPopover
+            optionName="matchingSemantics"
+            description={OPTION_HELP.matchingSemantics.description}
+            openHelpId={openHelpId}
+            setOpenHelpId={setOpenHelpId}
+          />
+        </div>
         <select
           id="opt-matchingSemantics"
           value={options.matchingSemantics}
@@ -90,7 +160,15 @@ function OptionsPanel({
         </select>
       </div>
       <div class="option-select-row">
-        <label class="option-select-label" for="opt-repetitionBehavior">repetitionBehavior</label>
+        <div class="option-select-header">
+          <label class="option-select-label" for="opt-repetitionBehavior">repetitionBehavior</label>
+          <HelpPopover
+            optionName="repetitionBehavior"
+            description={OPTION_HELP.repetitionBehavior.description}
+            openHelpId={openHelpId}
+            setOpenHelpId={setOpenHelpId}
+          />
+        </div>
         <select
           id="opt-repetitionBehavior"
           value={options.repetitionBehavior}
@@ -107,7 +185,15 @@ function OptionsPanel({
         </select>
       </div>
       <div class="option-select-row">
-        <label class="option-select-label" for="opt-wordBoundaryKind">wordBoundaryKind</label>
+        <div class="option-select-header">
+          <label class="option-select-label" for="opt-wordBoundaryKind">wordBoundaryKind</label>
+          <HelpPopover
+            optionName="wordBoundaryKind"
+            description={OPTION_HELP.wordBoundaryKind.description}
+            openHelpId={openHelpId}
+            setOpenHelpId={setOpenHelpId}
+          />
+        </div>
         <select
           id="opt-wordBoundaryKind"
           value={options.wordBoundaryKind}
@@ -124,4 +210,43 @@ function OptionsPanel({
       </div>
     </div>
   </div>
+}
+
+function HelpPopover({
+  optionName,
+  description,
+  openHelpId,
+  setOpenHelpId,
+}: {
+  optionName: string;
+  description: string;
+  openHelpId: string | null;
+  setOpenHelpId: Dispatch<StateUpdater<string | null>>;
+}): ReactNode {
+  const isOpen = openHelpId === optionName;
+
+  return <span
+    class="option-help"
+    onMouseEnter={() => setOpenHelpId(optionName)}
+    onMouseLeave={() => setOpenHelpId((prev) => (prev === optionName ? null : prev))}
+  >
+    <button
+      type="button"
+      class="option-help-trigger"
+      aria-label={`Help for ${optionName}`}
+      aria-expanded={isOpen}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpenHelpId((prev) => (prev === optionName ? null : optionName));
+      }}
+    >
+      ?
+    </button>
+    {isOpen && (
+      <span role="tooltip" class="option-help-popover">
+        {description}
+      </span>
+    )}
+  </span>
 }

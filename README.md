@@ -93,6 +93,6 @@ Cloudflare API トークンは不要です。Cloudflare Pages は Git 連携で 
 
 PR を close すると `staging/pr-<PR番号>` ブランチは自動削除されます。
 
-`CLOUDFLARE_PAGES_PROJECT` を GitHub Actions の Repository Variables に設定すると、PR コメントに `https://<branch-slug>.<project>.pages.dev` 形式のURLを表示します。
+PR コメントには `https://<branch-slug>.swift-regex-tester.pages.dev` 形式の Preview URL を表示します。
 
 fork からの PR は `GITHUB_TOKEN` の制限により `staging/*` へ push しません。

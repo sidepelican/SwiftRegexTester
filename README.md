@@ -75,3 +75,24 @@ Swift標準ライブラリのRegex機能をブラウザから試すための、S
 Cloudflare Pages 側では、ビルド元ブランチを `deploy` に設定してください。`deploy` ブランチにはビルド済みの静的ファイルだけが置かれる想定です。
 
 この方式では、Swift/Wasm の生成物を `main` ブランチへコミットする必要はありません。
+
+## PR staging
+
+`pull_request` イベントでは `Deploy PR Staging Branch` が次を実行します。
+
+1. `make test`
+2. `make build-web`
+3. `npm run build`
+4. `dist/` を `staging/pr-<PR番号>` ブランチへ force-push
+5. PR コメントへ staging 情報を追記
+
+Cloudflare API トークンは不要です。Cloudflare Pages は Git 連携で `staging/*` ブランチを Preview としてデプロイしてください。
+
+- 本番: `deploy` ブランチ
+- Preview: `staging/*` ブランチ
+
+PR を close すると `staging/pr-<PR番号>` ブランチは自動削除されます。
+
+`CLOUDFLARE_PAGES_PROJECT` を GitHub Actions の Repository Variables に設定すると、PR コメントに `https://<branch-slug>.<project>.pages.dev` 形式のURLを表示します。
+
+fork からの PR は `GITHUB_TOKEN` の制限により `staging/*` へ push しません。

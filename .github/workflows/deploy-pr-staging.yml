@@ -1,0 +1,160 @@
+name: Deploy PR Staging Branch
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+concurrency:
+  group: deploy-pr-staging-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      STAGING_BRANCH: staging/pr-${{ github.event.pull_request.number }}
+      CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Swift WebAssembly SDK
+        id: install-swift-sdk
+        run: |
+          set -euo pipefail
+          version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
+          tag="swift-${version}-RELEASE"
+          url="https://download.swift.org/swift-${version}-release/wasm-sdk/${tag}/${tag}_wasm.artifactbundle.tar.gz"
+          archive="$(mktemp --suffix=.artifactbundle.tar.gz)"
+          curl -fsSL "$url" -o "$archive"
+          swift sdk install "$archive"
+          rm -f "$archive"
+          echo "SWIFT_SDK_ID=${tag}_wasm" >> "$GITHUB_OUTPUT"
+
+      - name: Install WebAssembly optimization tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binaryen wabt
+
+      - name: Run tests
+        run: make test
+
+      - name: Build Swift/Wasm bundle
+        run: make build-web
+        env:
+          SWIFT_SDK_ID: ${{ steps.install-swift-sdk.outputs.SWIFT_SDK_ID }}
+
+      - name: Optimize wasm artifacts
+        run: |
+          set -euo pipefail
+          find .build/plugins/PackageToJS/outputs/Package -type f -name "*.wasm" -print0 | while IFS= read -r -d '' file; do
+            wasm-strip "$file"
+            wasm-opt -Oz --all-features --disable-gc --disable-typed-function-references "$file" -o "$file"
+          done
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Publish dist to staging branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: ${{ env.STAGING_BRANCH }}
+          force_orphan: true
+
+      - name: Build preview URL
+        id: preview
+        run: |
+          set -euo pipefail
+          slug="$(echo "${STAGING_BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9-]+#-#g; s#-+#-#g; s#^-##; s#-$##')"
+          if [ -n "${CLOUDFLARE_PAGES_PROJECT}" ]; then
+            echo "url=https://${slug}.${CLOUDFLARE_PAGES_PROJECT}.pages.dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment preview URL
+        uses: actions/github-script@v8
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+          STAGING_BRANCH: ${{ env.STAGING_BRANCH }}
+        with:
+          script: |
+            const marker = '<!-- pr-staging-preview -->'
+            const previewURL = process.env.PREVIEW_URL
+            const branch = process.env.STAGING_BRANCH
+            const body = previewURL
+              ? `${marker}\n✅ PR staging branch is updated.\n\n- Branch: \`${branch}\`\n- Preview: ${previewURL}`
+              : `${marker}\n✅ PR staging branch is updated.\n\n- Branch: \`${branch}\`\n- Preview URL: Set repository variable \`CLOUDFLARE_PAGES_PROJECT\` to show a direct link.`
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            })
+            const existing = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body?.includes(marker)
+            )
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              })
+            }
+
+  notify-fork:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip deployment for fork pull requests
+        run: |
+          echo "Fork pull request detected. Skip staging branch deployment because GITHUB_TOKEN does not have write permission." >> "$GITHUB_STEP_SUMMARY"
+
+  cleanup:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Delete staging branch
+        run: |
+          set -euo pipefail
+          branch="staging/pr-${{ github.event.pull_request.number }}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            git push origin --delete "$branch"
+            echo "Deleted ${branch}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Branch ${branch} does not exist; nothing to delete." >> "$GITHUB_STEP_SUMMARY"
+          fi

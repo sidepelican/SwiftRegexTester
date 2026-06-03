@@ -171,7 +171,7 @@ mark {
   background: #fbd38d;
   color: #7b3f00;
   border-radius: 3px;
-  padding: 0.05em 0.15em;
+  padding: 0.05em 0;
 }
 
 @media (prefers-color-scheme: dark) {

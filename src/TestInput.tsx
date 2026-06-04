@@ -1,42 +1,23 @@
-import { Fragment, ReactNode } from "preact/compat";
-import { HighlightPart } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
-import { useRef } from "preact/hooks";
+import { ReactNode } from 'preact/compat';
 
 export function TestInput({
   input,
   setInput,
-  highlightParts,
 }: {
   input: string;
   setInput: (input: string) => void;
-  highlightParts: HighlightPart[];
 }): ReactNode {
-  const highlightRef = useRef<HTMLDivElement>(null);
-
-  const syncScroll = (textarea: HTMLTextAreaElement) => {
-    if (!highlightRef.current) return;
-    highlightRef.current.scrollTop = textarea.scrollTop;
-    highlightRef.current.scrollLeft = textarea.scrollLeft;
-  };
-
-  return <div class="field">
-    <label for="teststr">Test string</label>
-    <div class="textarea-highlight-wrap">
-      <div class="textarea-highlight" ref={highlightRef} aria-hidden="true">
-        {input.length === 0 && <span class="placeholder">Enter text to test</span>}
-        {highlightParts.map((part, index) =>
-          part.marked ? <mark key={index}>{part.text}</mark> : <Fragment key={index}>{part.text}</Fragment>,
-        )}
-      </div>
+  return (
+    <div class="field">
+      <label for="teststr">Test string</label>
       <textarea
-        class="textarea-editor"
         id="teststr"
         rows={6}
         spellcheck={false}
+        placeholder="Enter text to test"
         value={input}
         onInput={(event) => setInput((event.currentTarget as HTMLTextAreaElement).value)}
-        onScroll={(event) => syncScroll(event.currentTarget as HTMLTextAreaElement)}
       />
     </div>
-  </div>
+  )
 }

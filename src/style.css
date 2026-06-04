@@ -12,7 +12,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  padding: 1.5rem 1rem;
+  padding: 1rem 1rem;
   background: color-mix(in srgb, Canvas 94%, CanvasText);
   color: CanvasText;
 }
@@ -90,62 +90,27 @@ input[type='text'] {
   resize: vertical;
 }
 
-input[type='text']:focus {
-  outline: 2px solid #4a90d9;
-  outline-offset: 0;
-  border-color: transparent;
-}
-
-.textarea-highlight-wrap {
-  position: relative;
-  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
-  border-radius: 0.5rem;
-  background: Canvas;
-}
-
-.textarea-highlight-wrap:focus-within {
-  outline: 2px solid #4a90d9;
-  outline-offset: 0;
-  border-color: transparent;
-}
-
-.textarea-highlight,
-.textarea-editor {
+textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
   border-radius: 0.5rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   font-size: 0.9rem;
   line-height: 1.7;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  min-height: calc((0.9rem * 1.7 * 6) + 1.2rem);
-  max-height: 24rem;
-  overflow: auto;
-}
-
-.textarea-highlight {
+  background: Canvas;
   color: CanvasText;
-  pointer-events: none;
+  transition: border-color 0.15s, outline 0.15s;
+  resize: vertical;
+  min-height: calc((0.9rem * 1.7 * 10) + 1.2rem);
+  max-height: 24rem;
 }
 
-.textarea-editor {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  border: 0;
-  resize: none;
-  background: transparent;
-  color: transparent;
-  caret-color: CanvasText;
-}
-
-.textarea-editor:focus {
-  outline: none;
-}
-
-.textarea-editor::selection {
-  background: color-mix(in srgb, #4a90d9 35%, transparent);
+input[type='text']:focus,
+textarea:focus {
+  outline: 2px solid #4a90d9;
+  outline-offset: 0;
+  border-color: transparent;
 }
 
 .pattern-lower {
@@ -179,11 +144,26 @@ input[type='text']:focus {
   color: inherit;
 }
 
+.highlighted-text {
+  padding: 0.75rem 1rem;
+  background: Canvas;
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  border-radius: 0.5rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 3rem;
+  max-height: 24rem;
+  overflow: auto;
+}
+
 mark {
   background: #fbd38d;
   color: #7b3f00;
   border-radius: 3px;
-  padding: 0.05em 0;
+  padding: 0.05em 0.15em;
 }
 
 @media (prefers-color-scheme: dark) {

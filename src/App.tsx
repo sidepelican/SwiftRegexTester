@@ -31,12 +31,11 @@ Billing Period: 2026.5.1 - 2026.5.31
 Due Date: 2026.6.30
 Payment processed on 2026.5.20
 
-Customer ID: CUST3398-三三-九
+Customer ID: CUST3398-Ⅲ-Ⅸ
 Total Amount: $1,248.75
 Payment Method: Credit Card (**** 4242)
 Thank you for your business.
-System Generated: 2026-06-03T14:22:07Z
-`;
+System Generated: 2026-06-03T14:22:07Z`;
 
 export function App() {
   const [pattern, setPattern] = useState(defaultPattern);
@@ -110,11 +109,12 @@ export function App() {
           setOptions={setOptions}
         />
 
-        <TestInput input={input} setInput={setInput} highlightParts={result.highlightParts} />
+        <TestInput input={input} setInput={setInput} />
       </section>
 
       <TestResult
         loadState={runtime}
+        hasInput={input.length > 0}
         result={result}
       />
     </main>

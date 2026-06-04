@@ -19,17 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Show tool versions
-        run: |
-          swift --version
-          node --version
-          npm --version
-
       - name: Install Swift WebAssembly SDK
         run: |
           set -euo pipefail

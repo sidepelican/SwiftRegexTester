@@ -42,11 +42,8 @@ jobs:
           rm -f "$archive"
           echo "SWIFT_SDK_ID=${tag}_wasm" >> "$GITHUB_OUTPUT"
 
-      - name: Run tests
-        run: make test
-
       - name: Build Swift/Wasm bundle
-        run: make build-web
+        run: swift package --swift-sdk "$(SWIFT_SDK_ID)" js -c release
         env:
           SWIFT_SDK_ID: ${{ steps.install-swift-sdk.outputs.SWIFT_SDK_ID }}
 

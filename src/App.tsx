@@ -25,9 +25,22 @@ type Runtime = {
 
 const initPromise = init();
 
+const defaultPattern = `(?<year>\\d{4}).(?<month>\\d{1,2}).(?<day>\\d{1,2})`;
+const defaultInput = `INVOICE #INV-78492 Issue Date: 2026.6.3
+Billing Period: 2026.5.1 - 2026.5.31
+Due Date: 2026.6.30
+Payment processed on 2026.5.20
+
+Customer ID: CUST3398-三三-九
+Total Amount: $1,248.75
+Payment Method: Credit Card (**** 4242)
+Thank you for your business.
+System Generated: 2026-06-03T14:22:07Z
+`;
+
 export function App() {
-  const [pattern, setPattern] = useState('');
-  const [input, setInput] = useState('');
+  const [pattern, setPattern] = useState(defaultPattern);
+  const [input, setInput] = useState(defaultInput);
   const [runtime, setRuntime] = useState<LoadState<Runtime>>({ loading: true });
   const [options, setOptions] = useState<RegexOptions>(DEFAULT_OPTIONS);
 

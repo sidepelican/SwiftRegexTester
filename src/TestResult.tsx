@@ -12,6 +12,7 @@ export function TestResult({
   result: RegexResult | null
 }): ReactNode {
   const result = resultOrNull ?? { highlightParts: [], matches: [] };
+  const matchCountLabel = result.matches.length === 1 ? 'match' : 'matches';
   return <section class="results">
     <h2>Results</h2>
 
@@ -38,7 +39,7 @@ export function TestResult({
         {result.matches.length === 0 && <p class="no-match">No matches</p>}
         {result.matches.length > 0 && (
           <>
-            <p class="match-count">{result.matches.length} match(es)</p>
+            <p class="match-count">{result.matches.length} {matchCountLabel}</p>
             <ol class="match-list">
               {result.matches.map((match, matchIndex) => (
                 <li key={matchIndex}>

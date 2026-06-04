@@ -1,10 +1,11 @@
-import { StateUpdater, useEffect, useReducer } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
-import { TestResult } from './TestResult';
+import { MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { PatternInput } from './PatternInput';
 import { TestInput } from './TestInput';
 import { LoadState } from './LoadState';
+import { TestResult } from './TestResult';
+import type { RegexWorkerRequest, RegexWorkerResponse } from './regexWorkerProtocol';
 
 const DEFAULT_OPTIONS: RegexOptions = {
   anchorsMatchLineEndings: false,
@@ -19,21 +20,12 @@ const DEFAULT_OPTIONS: RegexOptions = {
   wordBoundaryKind: WordBoundaryKindValues.DefaultBoundaries,
 };
 
-type Runtime = {
-  swiftExports: Exports;
+const EMPTY_RESULT: RegexResult = {
+  highlightParts: [],
+  matches: [],
 };
 
-type RegexCompileResult = { regex: SwiftRegex } | { error: string };
-
-type AppState = {
-  pattern: string;
-  input: string;
-  runtime: LoadState<Runtime>;
-  options: RegexOptions;
-  compiledRegex: RegexCompileResult | null;
-  result: RegexResult | null;
-};
-
+const WORKER_TIMEOUT_MS = 3_000;
 const initPromise = init();
 
 const defaultPattern = `(?<year>\\d{4}).(?<month>\\d{1,2}).(?<day>\\d{1,2})`;
@@ -48,109 +40,245 @@ Payment Method: Credit Card (**** 4242)
 Thank you for your business.
 System Generated: 2026-06-03T14:22:07Z`;
 
-function compileRegex(runtime: Runtime, pattern: string, options: RegexOptions): RegexCompileResult | null {
-  if (!pattern) {
-    return null;
-  }
-  try {
-    return { regex: new runtime.swiftExports.SwiftRegex(pattern, options) };
-  } catch (error: unknown) {
-    return { error: (error as Error).message };
-  }
-}
+type EvaluationErrorKind = 'compile' | 'runtime' | 'timeout';
 
-type Action =
-  | ['setRuntime', LoadState<Runtime>]
-  | ['setPattern', string]
-  | ['setInput', string]
-  | ['setOptions', StateUpdater<RegexOptions> ]
+type EvaluationState = {
+  status: 'idle' | 'running' | 'ready' | 'error';
+  result: RegexResult | null;
+  error: string;
+  errorKind: EvaluationErrorKind | null;
+  elapsedMs: number | null;
+};
 
-function reducer(oldState: AppState, [action, arg]: Action): AppState {
-  let state: AppState;
-  switch (action) {
-    case 'setRuntime':
-      state = { ...oldState, runtime: arg };
-      break;
-    case 'setPattern': 
-      state = { ...oldState, pattern: arg };
-      break;
-    case 'setOptions': {
-      const options = typeof arg === 'function' ? arg(oldState.options) : arg;
-      state = { ...oldState, options };
-      break;
-    }
-    case 'setInput':
-      state = { ...oldState, input: arg };
-      break;
-  }
+type ActiveRequest = {
+  requestId: number;
+  worker: Worker;
+  timeoutId: number;
+};
 
-  if (!state.runtime.value) { 
-    return state;
-  }
-
-  if (action === 'setRuntime' || action === 'setPattern' || action === 'setOptions') {
-    state.compiledRegex = compileRegex(state.runtime.value, state.pattern, state.options);
-  }
-
-  if (state.compiledRegex && 'regex' in state.compiledRegex) {
-    state.result = state.compiledRegex.regex.result(state.input);
-  } else {
-    state.result = null;
-  }
-
-  return state;
-}
-
-const initialState: AppState = {
-  pattern: defaultPattern,
-  input: defaultInput,
-  runtime: { loading: true },
-  options: DEFAULT_OPTIONS,
-  compiledRegex: null,
-  result: { highlightParts: [], matches: [] },
+const idleEvaluationState: EvaluationState = {
+  status: 'idle',
+  result: null,
+  error: '',
+  errorKind: null,
+  elapsedMs: null,
 };
 
 export function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [loadState, setLoadState] = useState<LoadState<true>>({ loading: true });
+  const [pattern, setPattern] = useState(defaultPattern);
+  const [input, setInput] = useState(defaultInput);
+  const [options, setOptions] = useState<RegexOptions>(DEFAULT_OPTIONS);
+  const [evaluation, setEvaluation] = useState<EvaluationState>(idleEvaluationState);
+
+  const workerRef = useRef<Worker | null>(null);
+  const activeRequestRef = useRef<ActiveRequest | null>(null);
+  const workerBusyRef = useRef(false);
+  const nextRequestIdRef = useRef(0);
+
+  const clearActiveRequest = () => {
+    if (activeRequestRef.current) {
+      window.clearTimeout(activeRequestRef.current.timeoutId);
+      activeRequestRef.current = null;
+    }
+    workerBusyRef.current = false;
+  };
+
+  const disposeWorker = () => {
+    clearActiveRequest();
+    workerRef.current?.terminate();
+    workerRef.current = null;
+  };
+
+  const ensureWorker = () => {
+    if (workerRef.current) {
+      return workerRef.current;
+    }
+
+    const worker = new Worker(new URL('./regexWorker.ts', import.meta.url), { type: 'module' });
+
+    worker.onmessage = (event: MessageEvent<RegexWorkerResponse>) => {
+      const message = event.data;
+      const activeRequest = activeRequestRef.current;
+
+      if (!activeRequest || activeRequest.requestId !== message.requestId || activeRequest.worker !== worker) {
+        return;
+      }
+
+      clearActiveRequest();
+
+      if (message.ok) {
+        setEvaluation({
+          status: 'ready',
+          result: message.result,
+          error: '',
+          errorKind: null,
+          elapsedMs: message.elapsedMs,
+        });
+        return;
+      }
+
+      setEvaluation({
+        status: 'error',
+        result: null,
+        error: message.error,
+        errorKind: message.kind,
+        elapsedMs: message.elapsedMs,
+      });
+    };
+
+    worker.onerror = (event) => {
+      if (activeRequestRef.current?.worker !== worker) {
+        return;
+      }
+
+      clearActiveRequest();
+      worker.terminate();
+      if (workerRef.current === worker) {
+        workerRef.current = null;
+      }
+
+      setEvaluation({
+        status: 'error',
+        result: null,
+        error: event.message || 'Failed to run regex processing in a web worker.',
+        errorKind: 'runtime',
+        elapsedMs: null,
+      });
+    };
+
+    workerRef.current = worker;
+    return worker;
+  };
 
   useEffect(() => {
     const load = async () => {
       try {
-        const { exports } = await initPromise;
-        dispatch(['setRuntime', { loading: false, value: { swiftExports: exports } }])
+        await initPromise;
+        setLoadState({ loading: false, value: true });
       } catch (error) {
-        dispatch(['setRuntime', { loading: false, error: String(error) }])
+        setLoadState({ loading: false, error: String(error) });
       }
-    }
+    };
+
     void load();
+
+    return () => {
+      disposeWorker();
+    };
   }, []);
 
-  const patternError = state.compiledRegex && 'error' in state.compiledRegex
-    ? state.compiledRegex.error
+  useEffect(() => {
+    if (loadState.loading) {
+      return;
+    }
+
+    if (loadState.error) {
+      disposeWorker();
+      setEvaluation(idleEvaluationState);
+      return;
+    }
+
+    if (!input) {
+      if (workerBusyRef.current) {
+        disposeWorker();
+      }
+      setEvaluation(idleEvaluationState);
+      return;
+    }
+
+    if (!pattern) {
+      if (workerBusyRef.current) {
+        disposeWorker();
+      }
+      setEvaluation({
+        status: 'ready',
+        result: EMPTY_RESULT,
+        error: '',
+        errorKind: null,
+        elapsedMs: 0,
+      });
+      return;
+    }
+
+    if (workerBusyRef.current) {
+      disposeWorker();
+    }
+
+    const worker = ensureWorker();
+    const requestId = ++nextRequestIdRef.current;
+    const timeoutId = window.setTimeout(() => {
+      const activeRequest = activeRequestRef.current;
+      if (!activeRequest || activeRequest.requestId !== requestId || activeRequest.worker !== worker) {
+        return;
+      }
+
+      clearActiveRequest();
+      worker.terminate();
+      if (workerRef.current === worker) {
+        workerRef.current = null;
+      }
+
+      setEvaluation({
+        status: 'error',
+        result: null,
+        error: 'Regex processing took longer than 3 seconds and was cancelled.',
+        errorKind: 'timeout',
+        elapsedMs: WORKER_TIMEOUT_MS,
+      });
+    }, WORKER_TIMEOUT_MS);
+
+    activeRequestRef.current = { requestId, worker, timeoutId };
+    workerBusyRef.current = true;
+
+    setEvaluation({
+      status: 'running',
+      result: null,
+      error: '',
+      errorKind: null,
+      elapsedMs: null,
+    });
+
+    const message: RegexWorkerRequest = {
+      requestId,
+      pattern,
+      input,
+      options,
+    };
+
+    worker.postMessage(message);
+  }, [loadState, pattern, input, options]);
+
+  const patternError = evaluation.status === 'error' && evaluation.errorKind === 'compile'
+    ? evaluation.error
     : '';
 
   return (
     <main>
       <section class="inputs">
         <PatternInput
-          pattern={state.pattern}
-          setPattern={(pattern) => dispatch(['setPattern', pattern])}
+          pattern={pattern}
+          setPattern={setPattern}
           patternError={patternError}
-          options={state.options}
-          setOptions={(options) => dispatch(['setOptions', options])}
+          options={options}
+          setOptions={setOptions}
         />
 
         <TestInput
-          input={state.input}
-          setInput={(input) => dispatch(['setInput', input])}
+          input={input}
+          setInput={setInput}
         />
       </section>
 
       <TestResult
-        loadState={state.runtime}
-        hasInput={state.input.length > 0}
-        result={state.result}
+        loadState={loadState}
+        hasInput={input.length > 0}
+        invalidPattern={patternError.length > 0}
+        isRunning={evaluation.status === 'running'}
+        errorMessage={evaluation.status === 'error' && evaluation.errorKind !== 'compile' ? evaluation.error : ''}
+        result={evaluation.status === 'ready' ? evaluation.result : null}
+        elapsedMs={evaluation.elapsedMs}
       />
     </main>
-  )
+  );
 }

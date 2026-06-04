@@ -185,7 +185,24 @@ mark {
   font-style: normal;
 }
 
+.result-error-text {
+  color: #c0392b;
+  font-style: normal;
+}
+
+@media (prefers-color-scheme: dark) {
+  .result-error-text {
+    color: #fc8181;
+  }
+}
+
 /* ── Match details ───────────────────────────────────────────── */
+
+.evaluation-time {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  color: color-mix(in srgb, CanvasText 55%, transparent);
+}
 
 .match-details {
   margin-top: 0.75rem;

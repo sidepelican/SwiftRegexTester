@@ -436,7 +436,7 @@ code {
   border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
   background: color-mix(in srgb, Canvas 95%, CanvasText 5%);
   color: CanvasText;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   line-height: 1.45;
   box-shadow: 0 8px 20px color-mix(in srgb, CanvasText 15%, transparent);
   opacity: 0;
@@ -472,4 +472,12 @@ code {
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   cursor: pointer;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  input[type='text'],
+  textarea,
+  .option-select-row select {
+    font-size: 16px;
+  }
 }

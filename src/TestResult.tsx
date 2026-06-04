@@ -14,14 +14,6 @@ export function TestResult({
   const result = resultOrNull ?? { highlightParts: [], matches: [] };
   return <section class="results">
     <h2>Results</h2>
-    {loadState.loading && <p class="loading">Loading WebAssembly…</p>}
-    {!loadState.loading && loadState.error && (
-      <p class="load-error">
-        Failed to load Swift/Wasm.
-        <br />
-        <code>{loadState.error}</code>
-      </p>
-    )}
 
     <div class="highlighted-text" aria-live="polite">
       {loadState.loading && <span class="loading">Loading WebAssembly…</span>}

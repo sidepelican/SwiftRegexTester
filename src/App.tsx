@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { StateUpdater, useEffect, useReducer } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, HighlightPart, MatchingSemanticsValues, RegexMatch, RegexOptions, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { Exports, MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { TestResult } from './TestResult';
 import { PatternInput } from './PatternInput';
 import { TestInput } from './TestInput';
@@ -23,6 +23,17 @@ type Runtime = {
   swiftExports: Exports;
 };
 
+type RegexCompileResult = { regex: SwiftRegex } | { error: string };
+
+type AppState = {
+  pattern: string;
+  input: string;
+  runtime: LoadState<Runtime>;
+  options: RegexOptions;
+  compiledRegex: RegexCompileResult | null;
+  result: RegexResult | null;
+};
+
 const initPromise = init();
 
 const defaultPattern = `(?<year>\\d{4}).(?<month>\\d{1,2}).(?<day>\\d{1,2})`;
@@ -37,85 +48,108 @@ Payment Method: Credit Card (**** 4242)
 Thank you for your business.
 System Generated: 2026-06-03T14:22:07Z`;
 
+function compileRegex(runtime: Runtime, pattern: string, options: RegexOptions): RegexCompileResult | null {
+  if (!pattern) {
+    return null;
+  }
+  try {
+    return { regex: new runtime.swiftExports.SwiftRegex(pattern, options) };
+  } catch (error: unknown) {
+    return { error: (error as Error).message };
+  }
+}
+
+type Action =
+  | ['setRuntime', LoadState<Runtime>]
+  | ['setPattern', string]
+  | ['setInput', string]
+  | ['setOptions', StateUpdater<RegexOptions> ]
+
+function reducer(oldState: AppState, [action, arg]: Action): AppState {
+  let state: AppState;
+  switch (action) {
+    case 'setRuntime':
+      state = { ...oldState, runtime: arg };
+      break;
+    case 'setPattern': 
+      state = { ...oldState, pattern: arg };
+      break;
+    case 'setOptions': {
+      const options = typeof arg === 'function' ? arg(oldState.options) : arg;
+      state = { ...oldState, options };
+      break;
+    }
+    case 'setInput':
+      state = { ...oldState, input: arg };
+      break;
+  }
+
+  if (!state.runtime.value) { 
+    return state;
+  }
+
+  if (action === 'setRuntime' || action === 'setPattern' || action === 'setOptions') {
+    state.compiledRegex = compileRegex(state.runtime.value, state.pattern, state.options);
+  }
+
+  if (state.compiledRegex && 'regex' in state.compiledRegex) {
+    state.result = state.compiledRegex.regex.result(state.input);
+  } else {
+    state.result = null;
+  }
+
+  return state;
+}
+
+const initialState: AppState = {
+  pattern: defaultPattern,
+  input: defaultInput,
+  runtime: { loading: true },
+  options: DEFAULT_OPTIONS,
+  compiledRegex: null,
+  result: { highlightParts: [], matches: [] },
+};
+
 export function App() {
-  const [pattern, setPattern] = useState(defaultPattern);
-  const [input, setInput] = useState(defaultInput);
-  const [runtime, setRuntime] = useState<LoadState<Runtime>>({ loading: true });
-  const [options, setOptions] = useState<RegexOptions>(DEFAULT_OPTIONS);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     const load = async () => {
       try {
         const { exports } = await initPromise;
-        setRuntime({
-          loading: false,
-          value: { swiftExports: exports },
-        })
+        dispatch(['setRuntime', { loading: false, value: { swiftExports: exports } }])
       } catch (error) {
-        setRuntime({ loading: false, error: String(error) })
+        dispatch(['setRuntime', { loading: false, error: String(error) }])
       }
     }
     void load();
   }, []);
 
-  const result = useMemo<{
-    patternError: string;
-    highlightParts: HighlightPart[];
-    matches: RegexMatch[];
-  }>(() => {
-    if (!runtime.value || !pattern) {
-      return {
-        patternError: '',
-        highlightParts: input ? [{ text: input, marked: false }] : [],
-        matches: [] as RegexMatch[],
-      }
-    }
-
-    let swiftRegex: SwiftRegex
-    try {
-      swiftRegex = new runtime.value.swiftExports.SwiftRegex(pattern, options);
-    } catch (error: unknown) {
-      return {
-        patternError: (error as Error).message,
-        highlightParts: input ? [{ text: input, marked: false }] : [],
-        matches: [] as RegexMatch[],
-      }
-    }
-
-    if (!input) {
-      return {
-        patternError: '',
-        highlightParts: [],
-        matches: [] as RegexMatch[],
-      }
-    }
-
-    const regexResult = swiftRegex.result(input);
-    return {
-      patternError: '',
-      highlightParts: regexResult.highlightParts,
-      matches: regexResult.matches,
-    }
-  }, [input, pattern, runtime, options])
+  const patternError = state.compiledRegex && 'error' in state.compiledRegex
+    ? state.compiledRegex.error
+    : '';
 
   return (
     <main>
       <section class="inputs">
         <PatternInput
-          pattern={pattern}
-          setPattern={setPattern}
-          patternError={result.patternError}
-          options={options}
-          setOptions={setOptions}
+          pattern={state.pattern}
+          setPattern={(pattern) => dispatch(['setPattern', pattern])}
+          patternError={patternError}
+          options={state.options}
+          setOptions={(options) => dispatch(['setOptions', options])}
         />
 
-        <TestInput input={input} setInput={setInput} />
+        <TestInput
+          input={state.input}
+          setInput={(input) => dispatch(['setInput', input])}
+        />
       </section>
 
       <TestResult
-        loadState={runtime}
-        hasInput={input.length > 0}
-        result={result}
+        loadState={state.runtime}
+        hasInput={state.input.length > 0}
+        result={state.result}
       />
     </main>
   )

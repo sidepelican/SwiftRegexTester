@@ -1,19 +1,17 @@
 import { Fragment, ReactNode } from 'preact/compat';
-import { HighlightPart, RegexMatch } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { RegexResult } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { LoadState } from './LoadState';
 
 export function TestResult({
   loadState,
   hasInput,
-  result,
+  result: resultOrNull,
 }: {
   loadState: LoadState<unknown>;
   hasInput: boolean;
-  result: {
-    highlightParts: HighlightPart[];
-    matches: RegexMatch[];
-  }
+  result: RegexResult | null
 }): ReactNode {
+  const result = resultOrNull ?? { highlightParts: [], matches: [] };
   return <section class="results">
     <h2>Results</h2>
     {loadState.loading && <p class="loading">Loading WebAssembly…</p>}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { StateUpdater, useEffect, useReducer, useRef } from 'preact/hooks';
 import { init } from 'swiftregextester';
 import { MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { PatternInput } from './PatternInput';
@@ -50,11 +50,37 @@ type EvaluationState = {
   elapsedMs: number | null;
 };
 
+type EvaluationRequest = {
+  requestId: number;
+  pattern: string;
+  input: string;
+  options: RegexOptions;
+};
+
+type AppState = {
+  loadState: LoadState<true>;
+  pattern: string;
+  input: string;
+  options: RegexOptions;
+  evaluation: EvaluationState;
+  pendingRequest: EvaluationRequest | null;
+  nextRequestId: number;
+};
+
 type ActiveRequest = {
   requestId: number;
   worker: Worker;
   timeoutId: number;
 };
+
+type Action =
+  | ['runtimeLoaded']
+  | ['runtimeFailed', string]
+  | ['setPattern', string]
+  | ['setInput', string]
+  | ['setOptions', StateUpdater<RegexOptions>]
+  | ['requestSucceeded', { requestId: number; result: RegexResult; elapsedMs: number }]
+  | ['requestFailed', { requestId: number; error: string; errorKind: EvaluationErrorKind; elapsedMs: number | null }];
 
 const idleEvaluationState: EvaluationState = {
   status: 'idle',
@@ -64,24 +90,145 @@ const idleEvaluationState: EvaluationState = {
   elapsedMs: null,
 };
 
+function prepareEvaluation(state: AppState): AppState {
+  if (state.loadState.loading || state.loadState.error) {
+    return {
+      ...state,
+      pendingRequest: null,
+      evaluation: idleEvaluationState,
+    };
+  }
+
+  if (!state.input) {
+    return {
+      ...state,
+      pendingRequest: null,
+      evaluation: idleEvaluationState,
+    };
+  }
+
+  if (!state.pattern) {
+    return {
+      ...state,
+      pendingRequest: null,
+      evaluation: {
+        status: 'ready',
+        result: EMPTY_RESULT,
+        error: '',
+        errorKind: null,
+        elapsedMs: 0,
+      },
+    };
+  }
+
+  const requestId = state.nextRequestId + 1;
+
+  return {
+    ...state,
+    nextRequestId: requestId,
+    pendingRequest: {
+      requestId,
+      pattern: state.pattern,
+      input: state.input,
+      options: state.options,
+    },
+    evaluation: {
+      status: 'running',
+      result: null,
+      error: '',
+      errorKind: null,
+      elapsedMs: null,
+    },
+  };
+}
+
+function reducer(oldState: AppState, [action, arg]: Action): AppState {
+  switch (action) {
+    case 'runtimeLoaded':
+      return prepareEvaluation({
+        ...oldState,
+        loadState: { loading: false, value: true },
+      });
+    case 'runtimeFailed':
+      return prepareEvaluation({
+        ...oldState,
+        loadState: { loading: false, error: arg },
+      });
+    case 'setPattern':
+      return prepareEvaluation({
+        ...oldState,
+        pattern: arg,
+      });
+    case 'setInput':
+      return prepareEvaluation({
+        ...oldState,
+        input: arg,
+      });
+    case 'setOptions': {
+      const options = typeof arg === 'function' ? arg(oldState.options) : arg;
+      return prepareEvaluation({
+        ...oldState,
+        options,
+      });
+    }
+    case 'requestSucceeded': {
+      if (!oldState.pendingRequest || oldState.pendingRequest.requestId !== arg.requestId) {
+        return oldState;
+      }
+
+      return {
+        ...oldState,
+        pendingRequest: null,
+        evaluation: {
+          status: 'ready',
+          result: arg.result,
+          error: '',
+          errorKind: null,
+          elapsedMs: arg.elapsedMs,
+        },
+      };
+    }
+    case 'requestFailed': {
+      if (!oldState.pendingRequest || oldState.pendingRequest.requestId !== arg.requestId) {
+        return oldState;
+      }
+
+      return {
+        ...oldState,
+        pendingRequest: null,
+        evaluation: {
+          status: 'error',
+          result: null,
+          error: arg.error,
+          errorKind: arg.errorKind,
+          elapsedMs: arg.elapsedMs,
+        },
+      };
+    }
+  }
+}
+
+const initialState: AppState = {
+  loadState: { loading: true },
+  pattern: defaultPattern,
+  input: defaultInput,
+  options: DEFAULT_OPTIONS,
+  evaluation: idleEvaluationState,
+  pendingRequest: null,
+  nextRequestId: 0,
+};
+
 export function App() {
-  const [loadState, setLoadState] = useState<LoadState<true>>({ loading: true });
-  const [pattern, setPattern] = useState(defaultPattern);
-  const [input, setInput] = useState(defaultInput);
-  const [options, setOptions] = useState<RegexOptions>(DEFAULT_OPTIONS);
-  const [evaluation, setEvaluation] = useState<EvaluationState>(idleEvaluationState);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const workerRef = useRef<Worker | null>(null);
   const activeRequestRef = useRef<ActiveRequest | null>(null);
-  const workerBusyRef = useRef(false);
-  const nextRequestIdRef = useRef(0);
 
   const clearActiveRequest = () => {
     if (activeRequestRef.current) {
       window.clearTimeout(activeRequestRef.current.timeoutId);
       activeRequestRef.current = null;
     }
-    workerBusyRef.current = false;
   };
 
   const disposeWorker = () => {
@@ -108,27 +255,26 @@ export function App() {
       clearActiveRequest();
 
       if (message.ok) {
-        setEvaluation({
-          status: 'ready',
+        dispatch(['requestSucceeded', {
+          requestId: message.requestId,
           result: message.result,
-          error: '',
-          errorKind: null,
           elapsedMs: message.elapsedMs,
-        });
+        }]);
         return;
       }
 
-      setEvaluation({
-        status: 'error',
-        result: null,
+      dispatch(['requestFailed', {
+        requestId: message.requestId,
         error: message.error,
         errorKind: message.kind,
         elapsedMs: message.elapsedMs,
-      });
+      }]);
     };
 
     worker.onerror = (event) => {
-      if (activeRequestRef.current?.worker !== worker) {
+      const activeRequest = activeRequestRef.current;
+
+      if (!activeRequest || activeRequest.worker !== worker) {
         return;
       }
 
@@ -138,13 +284,12 @@ export function App() {
         workerRef.current = null;
       }
 
-      setEvaluation({
-        status: 'error',
-        result: null,
+      dispatch(['requestFailed', {
+        requestId: activeRequest.requestId,
         error: event.message || 'Failed to run regex processing in a web worker.',
         errorKind: 'runtime',
         elapsedMs: null,
-      });
+      }]);
     };
 
     workerRef.current = worker;
@@ -155,9 +300,9 @@ export function App() {
     const load = async () => {
       try {
         await initPromise;
-        setLoadState({ loading: false, value: true });
+        dispatch(['runtimeLoaded']);
       } catch (error) {
-        setLoadState({ loading: false, error: String(error) });
+        dispatch(['runtimeFailed', String(error)]);
       }
     };
 
@@ -169,47 +314,15 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (loadState.loading) {
+    if (!state.pendingRequest) {
       return;
     }
 
-    if (loadState.error) {
-      disposeWorker();
-      setEvaluation(idleEvaluationState);
-      return;
-    }
-
-    if (!input) {
-      if (workerBusyRef.current) {
-        disposeWorker();
-      }
-      setEvaluation(idleEvaluationState);
-      return;
-    }
-
-    if (!pattern) {
-      if (workerBusyRef.current) {
-        disposeWorker();
-      }
-      setEvaluation({
-        status: 'ready',
-        result: EMPTY_RESULT,
-        error: '',
-        errorKind: null,
-        elapsedMs: 0,
-      });
-      return;
-    }
-
-    if (workerBusyRef.current) {
-      disposeWorker();
-    }
-
+    const request = state.pendingRequest;
     const worker = ensureWorker();
-    const requestId = ++nextRequestIdRef.current;
     const timeoutId = window.setTimeout(() => {
       const activeRequest = activeRequestRef.current;
-      if (!activeRequest || activeRequest.requestId !== requestId || activeRequest.worker !== worker) {
+      if (!activeRequest || activeRequest.requestId !== request.requestId || activeRequest.worker !== worker) {
         return;
       }
 
@@ -219,65 +332,65 @@ export function App() {
         workerRef.current = null;
       }
 
-      setEvaluation({
-        status: 'error',
-        result: null,
+      dispatch(['requestFailed', {
+        requestId: request.requestId,
         error: 'Regex processing took longer than 3 seconds and was cancelled.',
         errorKind: 'timeout',
         elapsedMs: WORKER_TIMEOUT_MS,
-      });
+      }]);
     }, WORKER_TIMEOUT_MS);
 
-    activeRequestRef.current = { requestId, worker, timeoutId };
-    workerBusyRef.current = true;
-
-    setEvaluation({
-      status: 'running',
-      result: null,
-      error: '',
-      errorKind: null,
-      elapsedMs: null,
-    });
+    activeRequestRef.current = {
+      requestId: request.requestId,
+      worker,
+      timeoutId,
+    };
 
     const message: RegexWorkerRequest = {
-      requestId,
-      pattern,
-      input,
-      options,
+      requestId: request.requestId,
+      pattern: request.pattern,
+      input: request.input,
+      options: request.options,
     };
 
     worker.postMessage(message);
-  }, [loadState, pattern, input, options]);
 
-  const patternError = evaluation.status === 'error' && evaluation.errorKind === 'compile'
-    ? evaluation.error
+    return () => {
+      if (activeRequestRef.current?.requestId === request.requestId) {
+        disposeWorker();
+      }
+    };
+  }, [state.pendingRequest]);
+
+  const patternError = state.evaluation.status === 'error' && state.evaluation.errorKind === 'compile'
+    ? state.evaluation.error
     : '';
 
   return (
     <main>
       <section class="inputs">
         <PatternInput
-          pattern={pattern}
-          setPattern={setPattern}
+          pattern={state.pattern}
+          setPattern={(pattern) => dispatch(['setPattern', pattern])}
           patternError={patternError}
-          options={options}
-          setOptions={setOptions}
+          options={state.options}
+          setOptions={(options) => dispatch(['setOptions', options])}
         />
 
         <TestInput
-          input={input}
-          setInput={setInput}
+          input={state.input}
+          setInput={(input) => dispatch(['setInput', input])}
         />
       </section>
 
       <TestResult
-        loadState={loadState}
-        hasInput={input.length > 0}
+        loadState={state.loadState}
+        hasInput={state.input.length > 0}
         invalidPattern={patternError.length > 0}
-        isRunning={evaluation.status === 'running'}
-        errorMessage={evaluation.status === 'error' && evaluation.errorKind !== 'compile' ? evaluation.error : ''}
-        result={evaluation.status === 'ready' ? evaluation.result : null}
-        elapsedMs={evaluation.elapsedMs}
+        isRunning={state.evaluation.status === 'running'}
+        errorMessage={state.evaluation.status === 'error' && state.evaluation.errorKind !== 'compile' ? state.evaluation.error : ''}
+        result={state.evaluation.status === 'ready' ? state.evaluation.result : null}
+        elapsedMs={state.evaluation.elapsedMs}
       />
     </main>
   );

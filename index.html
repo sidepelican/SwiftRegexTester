@@ -2,14 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
     <link rel="preload" as="fetch" href=".build/plugins/PackageToJS/outputs/Package/SwiftRegexTester.wasm" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SwiftRegexTester</title>
   </head>
   <body>
     <header>
-      <h1>Swift Regex Tester</h1>
+      <div style="display: inline-flex; gap: 0.9rem; align-items: center;">
+        <h1>Swift Regex Tester</h1>
+        <a href="https://github.com/sidepelican/SwiftRegexTester" target="_blank" rel="noopener">
+          <picture>
+            <source srcset="/github_dark.svg" media="(prefers-color-scheme: dark)">
+            <img src="/github_light.svg" alt="GitHub" width="30rem" height="30rem">
+          </picture>
+        </a>
+      </div>
       <p>Test Swift <code>Regex</code> behavior in your browser via WebAssembly</p>
     </header>
     <div id="app"></div>

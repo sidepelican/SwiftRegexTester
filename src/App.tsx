@@ -26,7 +26,7 @@ type Runtime = {
 const initPromise = init();
 
 const defaultPattern = `(?<year>\\d{4}).(?<month>\\d{1,2}).(?<day>\\d{1,2})`;
-const defaultInput = `INVOICE #INV-78492 Issue Date: 2026.6.3
+const defaultInput = `INVOICE #INV-78492
 Billing Period: 2026.5.1 - 2026.5.31
 Due Date: 2026.6.30
 Payment processed on 2026.5.20

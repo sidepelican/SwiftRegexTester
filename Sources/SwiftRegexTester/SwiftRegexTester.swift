@@ -3,10 +3,12 @@ import JavaScriptKit
 @JS struct CaptureGroup {
     var name: String
     var value: String
+    var unicodeScalarNames: String?
 }
 
 @JS struct RegexMatch {
     var value: String
+    var unicodeScalarNames: String?
     var groups: [CaptureGroup]
 }
 
@@ -18,22 +20,6 @@ import JavaScriptKit
 @JS struct HighlightPart {
     var text: String
     var marked: Bool
-}
-
-@JS enum MatchingSemantics: String {
-    case graphemeCluster
-    case unicodeScalar
-}
-
-@JS enum RepetitionBehavior: String {
-    case eager
-    case possessive
-    case reluctant
-}
-
-@JS enum WordBoundaryKind: String {
-    case simple
-    case defaultBoundaries = "default"
 }
 
 @JS struct RegexOptions {
@@ -90,10 +76,15 @@ import JavaScriptKit
                 guard let sub = output.substring else { return nil }
                 return CaptureGroup(
                     name: output.name ?? "\(i)",
-                    value: String(sub)
+                    value: String(sub),
+                    unicodeScalarNames: sub.unicodeScalarNamesWhenInvisible
                 )
             }
-            matches.append(RegexMatch(value: value, groups: groups))
+            matches.append(RegexMatch(
+                value: value,
+                unicodeScalarNames: value.unicodeScalarNamesWhenInvisible,
+                groups: groups
+            ))
 
             if currentIndex < match.range.lowerBound {
                 parts.append(HighlightPart(
@@ -117,30 +108,6 @@ import JavaScriptKit
 
         return RegexResult(matches: matches, highlightParts: parts)
     }
-}
-
-extension Regex {
-     func matchingSemantics(enum enumSemanticLevel: MatchingSemantics) -> Regex<Regex<Output>.RegexOutput> {
-        switch enumSemanticLevel {
-        case .graphemeCluster: return self.matchingSemantics(.graphemeCluster)
-        case .unicodeScalar:   return self.matchingSemantics(.unicodeScalar)
-        }
-     }
-
-     func repetitionBehavior(enum enumRepetitionBehavior: RepetitionBehavior) -> Regex<Regex<Output>.RegexOutput> {
-        switch enumRepetitionBehavior {
-        case .eager:      return self.repetitionBehavior(.eager)
-        case .possessive: return self.repetitionBehavior(.possessive)
-        case .reluctant:  return self.repetitionBehavior(.reluctant)
-        }
-     }
-
-     func wordBoundaryKind(enum enumWordBoundaryKind: WordBoundaryKind) -> Regex<Regex<Output>.RegexOutput> {
-        switch enumWordBoundaryKind {
-        case .simple:            return self.wordBoundaryKind(.simple)
-        case .defaultBoundaries: return self.wordBoundaryKind(.default)
-        }
-     }
 }
 
 @main

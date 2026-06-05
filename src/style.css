@@ -234,6 +234,11 @@ code {
   border-radius: 3px;
 }
 
+.scalar-names {
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+}
+
 .range {
   color: color-mix(in srgb, CanvasText 45%, transparent);
   font-size: 0.78rem;

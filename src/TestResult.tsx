@@ -41,20 +41,23 @@ export function TestResult({
           <>
             <p class="match-count">{result.matches.length} {matchCountLabel}</p>
             <ol class="match-list">
-              {result.matches.map((match, matchIndex) => (
-                <li key={matchIndex}>
+              {result.matches.map((match, i) => {
+                return <li key={i}>
                   <code class="match-value">{match.value}</code>
+                  {match.unicodeScalarNames && <span class="scalar-names">({match.unicodeScalarNames})</span>}
+
                   {match.groups.length > 0 && (
                     <ul class="groups">
-                      {match.groups.map((group, groupIndex) => (
-                        <li key={groupIndex}>
+                      {match.groups.map((group, j) => (
+                        <li key={j}>
                           output.{group.name}: <code>{group.value}</code>
+                          {group.unicodeScalarNames && <span class="scalar-names">({group.unicodeScalarNames})</span>}
                         </li>
                       ))}
                     </ul>
                   )}
                 </li>
-              ))}
+              })}
             </ol>
           </>
         )}

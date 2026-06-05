@@ -79,15 +79,53 @@ label {
 
 input[type='text'] {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
-  border-radius: 0.5rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   font-size: 0.9rem;
-  background: Canvas;
   color: CanvasText;
   transition: border-color 0.15s, outline 0.15s;
   resize: vertical;
+}
+
+.pattern-input-shell {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+  border-radius: 0.5rem;
+  background: Canvas;
+  color: CanvasText;
+  transition: border-color 0.15s, outline 0.15s;
+}
+
+.pattern-input-shell:focus-within {
+  outline: 2px solid #4a90d9;
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.pattern-input-delimiter {
+  color: color-mix(in srgb, CanvasText 65%, transparent);
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.9rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pattern-input-editor {
+  min-width: 0;
+  flex: 1 1 auto;
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.pattern-input-editor:focus {
+  outline: none;
+  border-color: transparent;
 }
 
 textarea {
@@ -106,7 +144,7 @@ textarea {
   max-height: 24rem;
 }
 
-input[type='text']:focus,
+input[type='text']:not(.pattern-input-editor):focus,
 textarea:focus {
   outline: 2px solid #4a90d9;
   outline-offset: 0;
@@ -347,12 +385,19 @@ code {
 }
 
 .option-checkbox-label {
-  display: block;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
   font-weight: 400;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.option-literal-flag {
+  color: color-mix(in srgb, CanvasText 55%, transparent);
+  white-space: nowrap;
 }
 
 .option-checkbox-controls {
@@ -482,7 +527,8 @@ code {
 @media (hover: none) and (pointer: coarse) {
   input[type='text'],
   textarea,
-  .option-select-row select {
+  .option-select-row select,
+  .pattern-input-delimiter {
     font-size: 16px;
   }
 }

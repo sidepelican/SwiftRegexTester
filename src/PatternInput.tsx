@@ -13,6 +13,12 @@ const CHECKBOX_OPTION_KEYS = [
   "ignoresCase",
 ] satisfies RegexOptionKey[];
 
+const LITERAL_FLAGS: Partial<Record<CheckboxOptionKey, string>> = {
+  anchorsMatchLineEndings: "m",
+  ignoresCase: "i",
+  dotMatchesNewlines: "s",
+};
+
 type RegexOptionKey = keyof RegexOptions;
 type CheckboxOptionKey = (typeof CHECKBOX_OPTION_KEYS)[number];
 type SelectOptionKey = Exclude<RegexOptionKey, CheckboxOptionKey>;
@@ -53,18 +59,31 @@ export function PatternInput({
   options: RegexOptions;
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
 }): ReactNode {
+  const activeLiteralFlags = [
+    options.ignoresCase && LITERAL_FLAGS.ignoresCase,
+    options.anchorsMatchLineEndings && LITERAL_FLAGS.anchorsMatchLineEndings,
+    options.dotMatchesNewlines && LITERAL_FLAGS.dotMatchesNewlines,
+  ].filter(Boolean).join('');
+
   return <div class="field">
     <label for="pattern">Regex pattern</label>
-    <input
-      id="pattern"
-      type="text"
-      placeholder={"Example: (\\w+)@(\\w+)"}
-      spellcheck={false}
-      autoComplete="off"
-      autoCapitalize="none"
-      value={pattern}
-      onInput={(event) => setPattern((event.currentTarget as HTMLInputElement).value)}
-    />
+    <div class="pattern-input-shell">
+      <span class="pattern-input-delimiter" aria-hidden="true">/</span>
+      <input
+        id="pattern"
+        class="pattern-input-editor"
+        type="text"
+        placeholder={"Example: (\\w+)@(\\w+)"}
+        spellcheck={false}
+        autoComplete="off"
+        autoCapitalize="none"
+        value={pattern}
+        onInput={(event) => setPattern((event.currentTarget as HTMLInputElement).value)}
+      />
+      <span class="pattern-input-delimiter pattern-input-flags" aria-hidden="true">
+        /{activeLiteralFlags}
+      </span>
+    </div>
     <div class="pattern-lower">
       {patternError &&
         <div
@@ -151,9 +170,13 @@ function CheckboxOption({
 }) {
   const { options, toggleCheckboxOption } = useOptionsContext();
   const inputId = `opt-${optionKey}`;
+  const literalFlag = LITERAL_FLAGS[optionKey];
   return <div key={optionKey} class="option-checkbox-item">
     <label for={inputId} class="option-checkbox-label">
       {optionKey}
+      {literalFlag && (
+        <span class="option-literal-flag">/{literalFlag}</span>
+      )}
     </label>
     <div class="option-checkbox-controls">
       <input

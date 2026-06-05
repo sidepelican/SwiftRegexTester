@@ -57,7 +57,7 @@ export function PatternInput({
 }: {
   pattern: string;
   setPattern: (pattern: string) => void;
-  patternError: string;
+  patternError: string | null;
   options: RegexOptions;
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
 }): ReactNode {

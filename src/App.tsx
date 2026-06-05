@@ -1,6 +1,6 @@
 import { StateUpdater, useEffect, useReducer } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { AppViewModel, Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { TestResult } from './TestResult';
 import { PatternInput } from './PatternInput';
 import { TestInput } from './TestInput';
@@ -20,19 +20,11 @@ const DEFAULT_OPTIONS: RegexOptions = {
   wordBoundaryKind: WordBoundaryKindValues.DefaultBoundaries,
 };
 
-type Runtime = {
-  swiftExports: Exports;
-};
-
-type RegexCompileResult = { regex: SwiftRegex } | { error: string };
-
 type AppState = {
   pattern: string;
   input: string;
-  runtime: LoadState<Runtime>;
   options: RegexOptions;
-  compiledRegex: RegexCompileResult | null;
-  result: RegexResult | null;
+  viewModel: LoadState<AppViewModel>;
 };
 
 const initPromise = init();
@@ -49,54 +41,46 @@ Payment Method: Credit Card (**** 4242)
 Thank you for your business.
 System Generated: 2026-06-03T14:22:07Z`;
 
-function compileRegex(runtime: Runtime, pattern: string, options: RegexOptions): RegexCompileResult | null {
-  if (!pattern) {
-    return null;
-  }
-  try {
-    return { regex: new runtime.swiftExports.SwiftRegex(pattern, options) };
-  } catch (error: unknown) {
-    return { error: (error as Error).message };
-  }
-}
-
 type Action =
-  | ['setRuntime', LoadState<Runtime>]
+  | ['init', { exports: Exports } | { error: string }]
   | ['setPattern', string]
   | ['setInput', string]
-  | ['setOptions', StateUpdater<RegexOptions> ]
+  | ['setOptions', StateUpdater<RegexOptions>]
 
 function reducer(oldState: AppState, [action, arg]: Action): AppState {
   let state: AppState;
   switch (action) {
-    case 'setRuntime':
-      state = { ...oldState, runtime: arg };
+    case 'init':
+      if ('error' in arg) {
+        state = { ...oldState, viewModel: { loading: false, error: arg.error } };
+      } else {
+        const viewModel = new arg.exports.AppViewModel({
+          pattern: oldState.pattern,
+          input: oldState.input,
+          options: oldState.options,
+        });
+        state = { ...oldState, viewModel: { loading: false, value: viewModel } };
+      }
       break;
-    case 'setPattern': 
+    case 'setPattern':
       state = { ...oldState, pattern: arg };
       break;
-    case 'setOptions': {
+    case 'setOptions':
       const options = typeof arg === 'function' ? arg(oldState.options) : arg;
       state = { ...oldState, options };
       break;
-    }
     case 'setInput':
       state = { ...oldState, input: arg };
       break;
   }
 
-  if (!state.runtime.value) { 
-    return state;
-  }
-
-  if (action === 'setRuntime' || action === 'setPattern' || action === 'setOptions') {
-    state.compiledRegex = compileRegex(state.runtime.value, state.pattern, state.options);
-  }
-
-  if (state.compiledRegex && 'regex' in state.compiledRegex) {
-    state.result = state.compiledRegex.regex.result(state.input);
-  } else {
-    state.result = null;
+  const viewModel = state.viewModel.value;
+  if (viewModel) {
+    if (action === 'setPattern' || action === 'setOptions') {
+      viewModel.updateRegex(state.pattern, state.options, state.input);
+    } else if (action === 'setInput') {
+      viewModel.updateInput(state.input);
+    }
   }
 
   return state;
@@ -105,10 +89,8 @@ function reducer(oldState: AppState, [action, arg]: Action): AppState {
 const initialState: AppState = {
   pattern: defaultPattern,
   input: defaultInput,
-  runtime: { loading: true },
   options: DEFAULT_OPTIONS,
-  compiledRegex: null,
-  result: { highlightParts: [], matches: [] },
+  viewModel: { loading: true },
 };
 
 export function App() {
@@ -118,17 +100,15 @@ export function App() {
     const load = async () => {
       try {
         const { exports } = await initPromise;
-        dispatch(['setRuntime', { loading: false, value: { swiftExports: exports } }])
+        dispatch(['init', { exports }]);
       } catch (error) {
-        dispatch(['setRuntime', { loading: false, error: String(error) }])
+        dispatch(['init', { error: String(error) }]);
       }
     }
     void load();
   }, []);
 
-  const patternError = state.compiledRegex && 'error' in state.compiledRegex
-    ? state.compiledRegex.error
-    : '';
+  const patternError = state.viewModel.value?.uiState.patternError || null;
 
   return (
     <main>
@@ -148,9 +128,9 @@ export function App() {
       </section>
 
       <TestResult
-        loadState={state.runtime}
+        loadState={state.viewModel}
         hasInput={state.input.length > 0}
-        result={state.result}
+        result={state.viewModel.value?.uiState.result || null}
       />
     </main>
   )

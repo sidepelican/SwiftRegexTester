@@ -1,7 +1,11 @@
 import { createContext } from "preact";
 import { ReactNode } from "preact/compat";
-import { MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
+import { MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
 import { Dispatch, StateUpdater, useContext, useEffect, useState } from "preact/hooks";
+
+type RegexOptionKey = keyof RegexOptions;
+type CheckboxOptionKey = (typeof CHECKBOX_OPTION_KEYS)[number];
+type SelectOptionKey = Exclude<RegexOptionKey, CheckboxOptionKey>;
 
 const CHECKBOX_OPTION_KEYS = [
   "anchorsMatchLineEndings",
@@ -13,15 +17,12 @@ const CHECKBOX_OPTION_KEYS = [
   "ignoresCase",
 ] satisfies RegexOptionKey[];
 
-const LITERAL_FLAGS: Partial<Record<CheckboxOptionKey, string>> = {
-  anchorsMatchLineEndings: "m",
+const LITERAL_FLAGS: Partial<Record<RegexOptionKey, string>> = {
+  executionMode: "g",
   ignoresCase: "i",
+  anchorsMatchLineEndings: "m",
   dotMatchesNewlines: "s",
 };
-
-type RegexOptionKey = keyof RegexOptions;
-type CheckboxOptionKey = (typeof CHECKBOX_OPTION_KEYS)[number];
-type SelectOptionKey = Exclude<RegexOptionKey, CheckboxOptionKey>;
 
 type OptionsContextValue = {
   options: RegexOptions;
@@ -34,6 +35,7 @@ type OptionsContextValue = {
 const OptionsContext = createContext<OptionsContextValue>({} as OptionsContextValue);
 
 const OPTION_HELP: Record<RegexOptionKey, string> = {
+  executionMode: "Controls whether the regex engine finds only the first match or all matches in the input.",
   anchorsMatchLineEndings: "Makes ^ and $ match at line boundaries, not only at the start and end of the entire input.",
   asciiOnlyCharacterClasses: "Limits regex character classes such as \\w, \\d, and \\s to ASCII behavior.",
   asciiOnlyDigits: "Treats digit matching as ASCII-only (0-9) instead of full Unicode decimal digits.",
@@ -60,6 +62,7 @@ export function PatternInput({
   setOptions: Dispatch<StateUpdater<RegexOptions>>;
 }): ReactNode {
   const activeLiteralFlags = [
+    options.executionMode === MatchExecutionModeValues.AllMatches && LITERAL_FLAGS.executionMode,
     options.ignoresCase && LITERAL_FLAGS.ignoresCase,
     options.anchorsMatchLineEndings && LITERAL_FLAGS.anchorsMatchLineEndings,
     options.dotMatchesNewlines && LITERAL_FLAGS.dotMatchesNewlines,
@@ -133,10 +136,13 @@ function OptionsPanel({
   return <OptionsContext.Provider
     value={{ options, openHelpId, setOpenHelpId, toggleCheckboxOption, updateOption }}
   >
-    <div
-      id="options-popup"
-      class="options-popup"
-    >
+    <div class="options-popup">
+      <div class="options-selects">
+        <SelectOption
+          optionKey="executionMode"
+          values={[MatchExecutionModeValues.FirstMatch, MatchExecutionModeValues.AllMatches]}
+        />
+      </div>
       <div class="options-checkboxes">
         {CHECKBOX_OPTION_KEYS.map((key) =>
           <CheckboxOption
@@ -171,8 +177,9 @@ function CheckboxOption({
   const { options, toggleCheckboxOption } = useOptionsContext();
   const inputId = `opt-${optionKey}`;
   const literalFlag = LITERAL_FLAGS[optionKey];
+
   return <div key={optionKey} class="option-checkbox-item">
-    <label for={inputId} class="option-checkbox-label">
+    <label for={inputId} class="option-label">
       {optionKey}
       {literalFlag && (
         <span class="option-literal-flag">/{literalFlag}</span>
@@ -202,8 +209,15 @@ function SelectOption<K extends SelectOptionKey>({
 }) {
   const { options, updateOption } = useOptionsContext();
   const inputId = `opt-${optionKey}`;
+  const literalFlag = LITERAL_FLAGS[optionKey];
+
   return <div class="option-select-row">
-    <label class="option-select-label" for={inputId}>{optionKey}</label>
+    <label class="option-label" for={inputId}>
+      {optionKey}
+      {literalFlag && (
+        <span class="option-literal-flag">/{literalFlag}</span>
+      )}
+    </label>
     <div class="option-select-container">
       <select
         id={inputId}

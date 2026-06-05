@@ -1,5 +1,10 @@
 import JavaScriptKit
 
+@JS enum MatchExecutionMode: String {
+    case firstMatch
+    case allMatches
+}
+
 @JS enum MatchingSemantics: String {
     case graphemeCluster
     case unicodeScalar

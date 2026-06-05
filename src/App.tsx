@@ -1,12 +1,13 @@
 import { StateUpdater, useEffect, useReducer } from 'preact/hooks';
 import { init } from 'swiftregextester';
-import { Exports, MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
+import { Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RegexResult, RepetitionBehaviorValues, SwiftRegex, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { TestResult } from './TestResult';
 import { PatternInput } from './PatternInput';
 import { TestInput } from './TestInput';
 import { LoadState } from './LoadState';
 
 const DEFAULT_OPTIONS: RegexOptions = {
+  executionMode: MatchExecutionModeValues.AllMatches,
   anchorsMatchLineEndings: false,
   asciiOnlyCharacterClasses: false,
   asciiOnlyDigits: false,

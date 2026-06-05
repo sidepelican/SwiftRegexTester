@@ -23,6 +23,7 @@ import JavaScriptKit
 }
 
 @JS struct RegexOptions {
+    var executionMode: MatchExecutionMode
     var anchorsMatchLineEndings: Bool
     var asciiOnlyCharacterClasses: Bool
     var asciiOnlyDigits: Bool
@@ -36,10 +37,12 @@ import JavaScriptKit
 }
 
 @JS class SwiftRegex {
-    var regex: Regex<AnyRegexOutput>
+    let regex: Regex<AnyRegexOutput>
+    let executionMode: MatchExecutionMode
 
-    init(regex: Regex<AnyRegexOutput>) {
+    init(regex: Regex<AnyRegexOutput>, executionMode: MatchExecutionMode) {
         self.regex = regex
+        self.executionMode = executionMode
     }
 
     static func make(pattern: String, options: RegexOptions) throws -> Regex<AnyRegexOutput> {
@@ -59,7 +62,7 @@ import JavaScriptKit
 
     @JS convenience init(pattern: String, options: RegexOptions) throws(JSException) {
         do {
-            self.init(regex: try Self.make(pattern: pattern, options: options))
+            self.init(regex: try Self.make(pattern: pattern, options: options), executionMode: options.executionMode)
         } catch {
             throw JSException(message: "\(error)")
         }
@@ -70,7 +73,18 @@ import JavaScriptKit
         var parts: [HighlightPart] = []
         var currentIndex = input.startIndex
 
-        for match in input.matches(of: regex) {
+        let rawMatches: [Regex<AnyRegexOutput>.Match] = switch executionMode {
+        case .firstMatch:
+            if let match = input.firstMatch(of: regex) {
+                [match]
+            } else { 
+                [] 
+            }
+        case .allMatches:
+            input.matches(of: regex)
+        }
+
+        for match in rawMatches {
             let value = String(input[match.range])
             let groups: [CaptureGroup] = zip(1..., match.output.dropFirst()).compactMap { i, output in
                 guard let sub = output.substring else { return nil }

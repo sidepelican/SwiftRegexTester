@@ -7,6 +7,7 @@ private func defaultOptions(
     matchingSemantics: MatchingSemantics = .graphemeCluster
 ) -> RegexOptions {
     RegexOptions(
+        executionMode: .allMatches,
         anchorsMatchLineEndings: false,
         asciiOnlyCharacterClasses: false,
         asciiOnlyDigits: false,

@@ -306,10 +306,6 @@ code {
 
 /* ── Options popup ───────────────────────────────────────────── */
 
-.options-accordion {
-  margin-top: 0.35rem;
-}
-
 .options-btn {
   display: flex;
   margin-inline-start: auto;

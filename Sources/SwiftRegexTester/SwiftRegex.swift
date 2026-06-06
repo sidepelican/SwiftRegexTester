@@ -36,8 +36,9 @@ import JavaScriptKit
     var wordBoundaryKind: WordBoundaryKind
 }
 
-struct SwiftRegex {
-    var regex: Regex<AnyRegexOutput>
+struct SwiftRegex: Sendable {
+    // This is safe because this regex never contains custom transforms.
+    nonisolated(unsafe) var regex: Regex<AnyRegexOutput>
     var executionMode: MatchExecutionMode
 
     init(regex: Regex<AnyRegexOutput>, executionMode: MatchExecutionMode) {

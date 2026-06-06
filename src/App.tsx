@@ -1,4 +1,4 @@
-import { StateUpdater, useEffect, useReducer } from 'preact/hooks';
+import { StateUpdater, useEffect, useReducer, useState } from 'preact/hooks';
 import { init } from 'swiftregextester';
 import { AppViewModel, Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { TestResult } from './TestResult';
@@ -42,10 +42,12 @@ Thank you for your business.
 System Generated: 2026-06-03T14:22:07Z`;
 
 type Action =
-  | ['init', { exports: Exports } | { error: string }]
+  | ['init', { exports: Exports, onUpdate: () => void } | { error: string }]
   | ['setPattern', string]
   | ['setInput', string]
   | ['setOptions', StateUpdater<RegexOptions>]
+  | ['forceUpdate']
+  ;
 
 function reducer(oldState: AppState, [action, arg]: Action): AppState {
   let state: AppState;
@@ -58,7 +60,7 @@ function reducer(oldState: AppState, [action, arg]: Action): AppState {
           pattern: oldState.pattern,
           input: oldState.input,
           options: oldState.options,
-        });
+        }, arg.onUpdate);
         state = { ...oldState, viewModel: { loading: false, value: viewModel } };
       }
       break;
@@ -71,6 +73,9 @@ function reducer(oldState: AppState, [action, arg]: Action): AppState {
       break;
     case 'setInput':
       state = { ...oldState, input: arg };
+      break;
+    case 'forceUpdate':
+      state = { ...oldState };
       break;
   }
 
@@ -100,7 +105,7 @@ export function App() {
     const load = async () => {
       try {
         const { exports } = await initPromise;
-        dispatch(['init', { exports }]);
+        dispatch(['init', { exports, onUpdate: () => dispatch(['forceUpdate']) }]);
       } catch (error) {
         dispatch(['init', { error: String(error) }]);
       }

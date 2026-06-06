@@ -1,4 +1,5 @@
 import JavaScriptKit
+import JavaScriptEventLoop
 
 @JS struct AppViewModel_UIState {
     var patternError: String?
@@ -11,24 +12,26 @@ import JavaScriptKit
     var input: String
 }
 
-@JS class AppViewModel {
-
-    @JS init(state: AppViewModel_UIStateBeforeInit) {
+@JS final class AppViewModel {
+    @JS init(state: AppViewModel_UIStateBeforeInit, onUpdate: @escaping () -> Void) {
         self._uiState = AppViewModel_UIState(
             patternError: nil,
             result: nil
         )
+        self.onUpdate = onUpdate
         updateResult(regex: updateRegex(pattern: state.pattern, options: state.options), input: state.input)
     }
-
     @JS var uiState: AppViewModel_UIState {
         _uiState
     }
     private var _uiState: AppViewModel_UIState
+    private let onUpdate: () -> Void
     private var regexCache: SwiftRegex?
+    private var currentExecutor: WebWorkerDedicatedExecutor?
 
     @JS func updateRegex(pattern: String, options: RegexOptions, input: String) {
-        updateResult(regex: updateRegex(pattern: pattern, options: options), input: input)
+        let regex = updateRegex(pattern: pattern, options: options)
+        updateResult(regex: regex, input: input)
     }
 
     @JS func updateInput(input: String) {
@@ -49,10 +52,31 @@ import JavaScriptKit
     }
 
     private func updateResult(regex: SwiftRegex?, input: String) {
-        if let regex = regex {
-            self._uiState.result = regex.result(of: input)
-        } else {
+        currentExecutor?.terminate()
+        guard let regex else {
             self._uiState.result = nil
+            return
+        }
+
+        nonisolated(unsafe) let unsafeSelf = self
+        Task {
+            let executor: WebWorkerDedicatedExecutor
+            do {
+                executor = try await WebWorkerDedicatedExecutor()
+            } catch {
+                print("Failed to create WebWorkerDedicatedExecutor: \(error)")
+                return
+            }
+
+            unsafeSelf.currentExecutor = executor
+            Task(executorPreference: executor) {
+                unsafeSelf._uiState.result = regex.result(of: input)
+                unsafeSelf.currentExecutor = nil
+                Task { @MainActor in
+                    unsafeSelf.onUpdate()
+                    executor.terminate()
+                }
+            }
         }
     }
 }

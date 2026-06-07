@@ -1,33 +1,31 @@
 import JavaScriptKit
 import JavaScriptEventLoop
+import Synchronization
 
 @JS struct AppViewModel_UIState {
-    var patternError: String?
-    var result: RegexResult?
-}
-
-@JS struct AppViewModel_UIStateBeforeInit {
-    var pattern: String
-    var options: RegexOptions
-    var input: String
+    var patternError: String? = nil
+    var result: RegexResult? = nil
 }
 
 @JS final class AppViewModel {
-    @JS init(state: AppViewModel_UIStateBeforeInit, onUpdate: @escaping () -> Void) {
-        self._uiState = AppViewModel_UIState(
-            patternError: nil,
-            result: nil
-        )
+    @JS init(onUpdate: @escaping () -> Void) {
+        self.sharedState = Mutex(SharedState(
+            uiState: AppViewModel_UIState()
+        ))
         self.onUpdate = onUpdate
-        updateResult(regex: updateRegex(pattern: state.pattern, options: state.options), input: state.input)
     }
+
     @JS var uiState: AppViewModel_UIState {
-        _uiState
+        sharedState.withLock { $0.uiState }
     }
-    private var _uiState: AppViewModel_UIState
     private let onUpdate: () -> Void
     private var regexCache: SwiftRegex?
     private var currentExecutor: WebWorkerDedicatedExecutor?
+    
+    private struct SharedState {
+        var uiState: AppViewModel_UIState
+    }
+    private let sharedState: Mutex<SharedState>
 
     @JS func updateRegex(pattern: String, options: RegexOptions, input: String) {
         let regex = updateRegex(pattern: pattern, options: options)
@@ -42,11 +40,15 @@ import JavaScriptEventLoop
         do {
             let regex = try SwiftRegex(pattern: pattern, options: options)
             self.regexCache = regex
-            self._uiState.patternError = nil
+            self.sharedState.withLock {
+                $0.uiState.patternError = nil
+            }
             return regex
         } catch {
             self.regexCache = nil
-            self._uiState.patternError = "\(error)"
+            self.sharedState.withLock {
+                $0.uiState.patternError = "\(error)"
+            }
             return nil
         }
     }
@@ -54,7 +56,9 @@ import JavaScriptEventLoop
     private func updateResult(regex: SwiftRegex?, input: String) {
         currentExecutor?.terminate()
         guard let regex else {
-            self._uiState.result = nil
+            self.sharedState.withLock {
+                $0.uiState.result = nil
+            }
             return
         }
 
@@ -64,13 +68,15 @@ import JavaScriptEventLoop
             do {
                 executor = try await WebWorkerDedicatedExecutor()
             } catch {
-                print("Failed to create WebWorkerDedicatedExecutor: \(error)")
+                print("Failed to create executor: \(error)")
                 return
             }
 
             unsafeSelf.currentExecutor = executor
             Task(executorPreference: executor) {
-                unsafeSelf._uiState.result = regex.result(of: input)
+                unsafeSelf.sharedState.withLock {
+                    $0.uiState.result = regex.result(of: input)
+                }
                 unsafeSelf.currentExecutor = nil
                 Task { @MainActor in
                     unsafeSelf.onUpdate()

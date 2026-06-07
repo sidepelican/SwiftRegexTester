@@ -1,10 +1,10 @@
-import { StateUpdater, useEffect, useReducer, useState } from 'preact/hooks';
-import { init } from 'swiftregextester';
-import { AppViewModel, Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
-import { TestResult } from './TestResult';
-import { PatternInput } from './PatternInput';
-import { TestInput } from './TestInput';
-import { LoadState } from './LoadState';
+import { StateUpdater, useEffect, useReducer, useState } from "preact/hooks";
+import { init } from "swiftregextester";
+import { AppViewModel, Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
+import { TestResult } from "./TestResult";
+import { PatternInput } from "./PatternInput";
+import { TestInput } from "./TestInput";
+import { LoadState } from "./LoadState";
 
 const DEFAULT_OPTIONS: RegexOptions = {
   executionMode: MatchExecutionModeValues.AllMatches,
@@ -42,48 +42,44 @@ Thank you for your business.
 System Generated: 2026-06-03T14:22:07Z`;
 
 type Action =
-  | ['init', { exports: Exports, onUpdate: () => void } | { error: string }]
-  | ['setPattern', string]
-  | ['setInput', string]
-  | ['setOptions', StateUpdater<RegexOptions>]
-  | ['forceUpdate']
+  | ["init", { exports: Exports, onUpdate: () => void } | { error: string }]
+  | ["setPattern", string]
+  | ["setInput", string]
+  | ["setOptions", StateUpdater<RegexOptions>]
+  | ["forceUpdate"]
   ;
 
 function reducer(oldState: AppState, [action, arg]: Action): AppState {
   let state: AppState;
   switch (action) {
-    case 'init':
-      if ('error' in arg) {
+    case "init":
+      if ("error" in arg) {
         state = { ...oldState, viewModel: { loading: false, error: arg.error } };
       } else {
-        const viewModel = new arg.exports.AppViewModel({
-          pattern: oldState.pattern,
-          input: oldState.input,
-          options: oldState.options,
-        }, arg.onUpdate);
+        const viewModel = new arg.exports.AppViewModel(arg.onUpdate);
         state = { ...oldState, viewModel: { loading: false, value: viewModel } };
       }
       break;
-    case 'setPattern':
+    case "setPattern":
       state = { ...oldState, pattern: arg };
       break;
-    case 'setOptions':
-      const options = typeof arg === 'function' ? arg(oldState.options) : arg;
+    case "setOptions":
+      const options = typeof arg === "function" ? arg(oldState.options) : arg;
       state = { ...oldState, options };
       break;
-    case 'setInput':
+    case "setInput":
       state = { ...oldState, input: arg };
       break;
-    case 'forceUpdate':
+    case "forceUpdate":
       state = { ...oldState };
       break;
   }
 
   const viewModel = state.viewModel.value;
   if (viewModel) {
-    if (action === 'setPattern' || action === 'setOptions') {
+    if (action == "init" || action === "setPattern" || action === "setOptions") {
       viewModel.updateRegex(state.pattern, state.options, state.input);
-    } else if (action === 'setInput') {
+    } else if (action === "setInput") {
       viewModel.updateInput(state.input);
     }
   }
@@ -105,37 +101,38 @@ export function App() {
     const load = async () => {
       try {
         const { exports } = await initPromise;
-        dispatch(['init', { exports, onUpdate: () => dispatch(['forceUpdate']) }]);
+        dispatch(["init", { exports, onUpdate: () => dispatch(["forceUpdate"]) }]);
       } catch (error) {
-        dispatch(['init', { error: String(error) }]);
+        dispatch(["init", { error: String(error) }]);
       }
     }
     void load();
   }, []);
 
-  const patternError = state.viewModel.value?.uiState.patternError || null;
+  const viewModelState = state.viewModel.value?.uiState;
+  const patternError = viewModelState?.patternError || null;
 
   return (
     <main>
       <section class="inputs">
         <PatternInput
           pattern={state.pattern}
-          setPattern={(pattern) => dispatch(['setPattern', pattern])}
+          setPattern={(pattern) => dispatch(["setPattern", pattern])}
           patternError={patternError}
           options={state.options}
-          setOptions={(options) => dispatch(['setOptions', options])}
+          setOptions={(options) => dispatch(["setOptions", options])}
         />
 
         <TestInput
           input={state.input}
-          setInput={(input) => dispatch(['setInput', input])}
+          setInput={(input) => dispatch(["setInput", input])}
         />
       </section>
 
       <TestResult
         loadState={state.viewModel}
         hasInput={state.input.length > 0}
-        result={state.viewModel.value?.uiState.result || null}
+        result={viewModelState?.result || null}
       />
     </main>
   )

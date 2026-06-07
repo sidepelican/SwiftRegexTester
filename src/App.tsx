@@ -133,6 +133,7 @@ export function App() {
         loadState={state.viewModel}
         hasInput={state.input.length > 0}
         result={viewModelState?.result || null}
+        isComputing={viewModelState?.isComputing || false}
       />
     </main>
   )

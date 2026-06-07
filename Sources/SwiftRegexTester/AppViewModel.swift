@@ -3,6 +3,7 @@ import JavaScriptEventLoop
 import Synchronization
 
 @JS struct AppViewModel_UIState {
+    var isComputing: Bool = false
     var patternError: String? = nil
     var result: RegexResult? = nil
 }
@@ -54,7 +55,6 @@ import Synchronization
     }
 
     private func updateResult(regex: SwiftRegex?, input: String) {
-        currentExecutor?.terminate()
         guard let regex else {
             self.sharedState.withLock {
                 $0.uiState.result = nil
@@ -66,23 +66,39 @@ import Synchronization
         Task {
             let executor: WebWorkerDedicatedExecutor
             do {
-                executor = try await WebWorkerDedicatedExecutor()
+                executor = try await unsafeSelf.ensureExecutor()
             } catch {
                 print("Failed to create executor: \(error)")
                 return
             }
 
-            unsafeSelf.currentExecutor = executor
+            unsafeSelf.sharedState.withLock {
+                $0.uiState.isComputing = true
+            }
             Task(executorPreference: executor) {
+                let result = regex.result(of: input)
                 unsafeSelf.sharedState.withLock {
-                    $0.uiState.result = regex.result(of: input)
+                    $0.uiState.result = result
+                    $0.uiState.isComputing = false
                 }
-                unsafeSelf.currentExecutor = nil
                 Task { @MainActor in
                     unsafeSelf.onUpdate()
-                    executor.terminate()
                 }
             }
+        }
+    }
+
+    private func ensureExecutor() async throws -> WebWorkerDedicatedExecutor {
+        if let executor = currentExecutor, !sharedState.withLock(\.uiState.isComputing) {
+            return executor
+        } else {
+            let newExecutor = try await WebWorkerDedicatedExecutor()
+            currentExecutor?.terminate()
+            currentExecutor = newExecutor
+            sharedState.withLock {
+                $0.uiState.isComputing = false
+            }
+            return newExecutor
         }
     }
 }

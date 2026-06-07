@@ -1,20 +1,23 @@
 import { Fragment, ReactNode } from 'preact/compat';
 import { RegexResult } from '../.build/plugins/PackageToJS/outputs/Package/bridge-js';
 import { LoadState } from './LoadState';
+import { LoadingDots } from './Components/LoadingDots';
 
 export function TestResult({
   loadState,
   hasInput,
   result: resultOrNull,
+  isComputing,
 }: {
   loadState: LoadState<unknown>;
   hasInput: boolean;
-  result: RegexResult | null
+  result: RegexResult | null;
+  isComputing: boolean;
 }): ReactNode {
   const result = resultOrNull ?? { highlightParts: [], matches: [] };
   const matchCountLabel = result.matches.length === 1 ? 'match' : 'matches';
   return <section class="results">
-    <h2>Results</h2>
+    <h2>Results{isComputing && <span> <LoadingDots/></span>}</h2>
 
     <div class="highlighted-text" aria-live="polite">
       {loadState.loading && <span class="loading">Loading WebAssembly…</span>}

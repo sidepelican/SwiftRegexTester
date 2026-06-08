@@ -1,5 +1,4 @@
 import JavaScriptKit
-import JavaScriptEventLoop
 import Synchronization
 
 @JS struct AppViewModel_UIState {
@@ -14,14 +13,15 @@ import Synchronization
             uiState: AppViewModel_UIState()
         ))
         self.onUpdate = onUpdate
+        self.computeQueue = SingleLastWinTaskQueue()
     }
 
     @JS var uiState: AppViewModel_UIState {
         sharedState.withLock { $0.uiState }
     }
     private let onUpdate: () -> Void
+    private let computeQueue: SingleLastWinTaskQueue
     private var regexCache: SwiftRegex?
-    private var currentExecutor: WebWorkerDedicatedExecutor?
     
     private struct SharedState {
         var uiState: AppViewModel_UIState
@@ -58,47 +58,25 @@ import Synchronization
         guard let regex else {
             self.sharedState.withLock {
                 $0.uiState.result = nil
+                $0.uiState.isComputing = false
             }
+            computeQueue.discardCurrentTask()
             return
         }
 
-        nonisolated(unsafe) let unsafeSelf = self
-        Task {
-            let executor: WebWorkerDedicatedExecutor
-            do {
-                executor = try await unsafeSelf.ensureExecutor()
-            } catch {
-                print("Failed to create executor: \(error)")
-                return
-            }
-
-            unsafeSelf.sharedState.withLock {
-                $0.uiState.isComputing = true
-            }
-            Task(executorPreference: executor) {
-                let result = regex.result(of: input)
-                unsafeSelf.sharedState.withLock {
-                    $0.uiState.result = result
-                    $0.uiState.isComputing = false
-                }
-                Task { @MainActor in
-                    unsafeSelf.onUpdate()
-                }
-            }
+        sharedState.withLock {
+            $0.uiState.isComputing = true
         }
-    }
-
-    private func ensureExecutor() async throws -> WebWorkerDedicatedExecutor {
-        if let executor = currentExecutor, !sharedState.withLock(\.uiState.isComputing) {
-            return executor
-        } else {
-            let newExecutor = try await WebWorkerDedicatedExecutor()
-            currentExecutor?.terminate()
-            currentExecutor = newExecutor
-            sharedState.withLock {
+        nonisolated(unsafe) weak let unsafeSelf = self
+        computeQueue.enqueue {
+            let result = regex.result(of: input)
+            unsafeSelf?.sharedState.withLock {
+                $0.uiState.result = result
                 $0.uiState.isComputing = false
             }
-            return newExecutor
+            Task { @MainActor in
+                unsafeSelf?.onUpdate()
+            }
         }
     }
 }

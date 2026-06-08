@@ -22,11 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - id: install-swift-sdk
-        uses: swiftwasm/setup-swiftwasm@v2
+      - uses: vapor/swiftly-action@v0.2
         with:
-          tag: "swift-6.3-RELEASE"
-          target: "wasm32-unknown-wasip1-threads"
+          toolchain: 6.3.0
+      - run: swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.3-RELEASE/swift-wasm-6.3-RELEASE-wasm32-unknown-wasip1-threads.artifactbundle.zip --checksum a09a0eed0fef420b4b8bb03e4dc0e7e2653ab6c88b44cb4f359ef06063b35c39
 
       - name: Install WebAssembly optimization tools
         run: |
@@ -34,7 +33,7 @@ jobs:
           sudo apt-get install -y binaryen
 
       - name: Build Swift/Wasm bundle
-        run: swift package --swift-sdk "${{ steps.install-swift-sdk.outputs.swift-sdk-id }}" js -c release
+        run: swiftly run swift package --swift-sdk 6.3-RELEASE-wasm32-unknown-wasip1-threads js -c release
 
       - name: Install dependencies
         run: npm ci

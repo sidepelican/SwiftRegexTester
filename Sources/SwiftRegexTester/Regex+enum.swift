@@ -1,22 +1,22 @@
 import JavaScriptKit
 
-@JS enum MatchExecutionMode: String {
+@JS enum MatchExecutionMode: String, Sendable {
     case firstMatch
     case allMatches
 }
 
-@JS enum MatchingSemantics: String {
+@JS enum MatchingSemantics: String, Sendable {
     case graphemeCluster
     case unicodeScalar
 }
 
-@JS enum RepetitionBehavior: String {
+@JS enum RepetitionBehavior: String, Sendable {
     case eager
     case possessive
     case reluctant
 }
 
-@JS enum WordBoundaryKind: String {
+@JS enum WordBoundaryKind: String, Sendable {
     case simple
     case defaultBoundaries = "default"
 }

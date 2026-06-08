@@ -12,7 +12,8 @@ let package = Package(
         .executableTarget(
             name: "SwiftRegexTester",
             dependencies: [
-                "JavaScriptKit",
+                .product(name: "JavaScriptKit", package: "JavaScriptKit"),
+                .product(name: "JavaScriptEventLoop", package: "JavaScriptKit"),
             ],
             swiftSettings: [
                 .enableExperimentalFeature("Extern"),

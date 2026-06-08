@@ -29,21 +29,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Swift WebAssembly SDK
-        id: install-swift-sdk
-        run: |
-          set -euo pipefail
-          version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
-          tag="swift-${version}-RELEASE"
-          url="https://download.swift.org/swift-${version}-release/wasm-sdk/${tag}/${tag}_wasm.artifactbundle.tar.gz"
-          archive="$(mktemp --suffix=.artifactbundle.tar.gz)"
-          curl -fsSL "$url" -o "$archive"
-          swift sdk install "$archive"
-          rm -f "$archive"
-          echo "SWIFT_SDK_ID=${tag}_wasm" >> "$GITHUB_OUTPUT"
+      - id: install-swift-sdk
+        uses: swiftwasm/setup-swiftwasm@v2
+        with:
+          target: "wasm32-unknown-wasip1-threads"
 
       - name: Build Swift/Wasm bundle
-        run: swift package --swift-sdk "${{ steps.install-swift-sdk.outputs.SWIFT_SDK_ID }}" js -c release
+        run: swift package --swift-sdk "${{ steps.install-swift-sdk.outputs.swift-sdk-id }}" js -c release
 
       - name: Install dependencies
         run: npm ci

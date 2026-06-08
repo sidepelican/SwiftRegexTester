@@ -76,7 +76,6 @@ export function PatternInput({
         id="pattern"
         class="pattern-input-editor"
         type="text"
-        placeholder={"Example: (\\w+)@(\\w+)"}
         spellcheck={false}
         autoComplete="off"
         autoCapitalize="none"

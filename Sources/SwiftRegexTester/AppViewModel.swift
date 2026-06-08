@@ -39,6 +39,13 @@ import Synchronization
 
     private func updateRegex(pattern: String, options: RegexOptions) -> SwiftRegex? {
         do {
+            if pattern.isEmpty {
+                self.regexCache = nil
+                self.sharedState.withLock {
+                    $0.uiState.patternError = nil
+                }
+                return nil
+            }
             let regex = try SwiftRegex(pattern: pattern, options: options)
             self.regexCache = regex
             self.sharedState.withLock {

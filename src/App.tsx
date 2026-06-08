@@ -1,10 +1,12 @@
-import { StateUpdater, useEffect, useReducer, useState } from "preact/hooks";
+import { StateUpdater, useEffect, useReducer } from "preact/hooks";
 import { init } from "swiftregextester";
 import { AppViewModel, Exports, MatchExecutionModeValues, MatchingSemanticsValues, RegexOptions, RepetitionBehaviorValues, WordBoundaryKindValues } from "../.build/plugins/PackageToJS/outputs/Package/bridge-js";
 import { TestResult } from "./TestResult";
 import { PatternInput } from "./PatternInput";
 import { TestInput } from "./TestInput";
 import { LoadState } from "./LoadState";
+
+const initPromise = init();
 
 const DEFAULT_OPTIONS: RegexOptions = {
   executionMode: MatchExecutionModeValues.AllMatches,
@@ -20,17 +22,17 @@ const DEFAULT_OPTIONS: RegexOptions = {
   wordBoundaryKind: WordBoundaryKindValues.DefaultBoundaries,
 };
 
-type AppState = {
-  pattern: string;
-  input: string;
-  options: RegexOptions;
-  viewModel: LoadState<AppViewModel>;
-};
-
-const initPromise = init();
-
-const defaultPattern = `(?<year>\\d{4}).(?<month>\\d{1,2}).(?<day>\\d{1,2})`;
-const defaultInput = `INVOICE #INV-78492
+const PRESETS = [
+  {
+    label: "Email",
+    pattern: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}",
+    input: "Please contact us at support@example.com or sales@example.com for more information.",
+    options: DEFAULT_OPTIONS,
+  },
+  {
+    label: "Date (ISO)",
+    pattern: "(?<year>\\d{4}).(?<month>\\d{1,2}).(?<day>\\d{1,2})",
+    input: `INVOICE #INV-78492
 Billing Period: 2026.5.1 - 2026.5.31
 Due Date: 2026.6.30
 Payment processed on 2026.5.20
@@ -39,13 +41,32 @@ Customer ID: CUST3398-Ⅲ-Ⅸ
 Total Amount: $1,248.75
 Payment Method: Credit Card (**** 4242)
 Thank you for your business.
-System Generated: 2026-06-03T14:22:07Z`;
+System Generated: 2026-06-03T14:22:07Z`,
+    options: { ...DEFAULT_OPTIONS, asciiOnlyDigits: true },
+  },
+  {
+    label: "Emoji",
+    pattern: ".",
+    input: `😀
+👩‍❤️‍👨
+🏴‍☠️`,
+    options: { ...DEFAULT_OPTIONS, matchingSemantics: MatchingSemanticsValues.UnicodeScalar },
+  },
+] as const;
+
+type AppState = {
+  pattern: string;
+  input: string;
+  options: RegexOptions;
+  viewModel: LoadState<AppViewModel>;
+};
 
 type Action =
   | ["init", { exports: Exports, onUpdate: () => void } | { error: string }]
   | ["setPattern", string]
   | ["setInput", string]
   | ["setOptions", StateUpdater<RegexOptions>]
+  | ["applyPreset", { pattern: string, input: string, options: RegexOptions }]
   | ["forceUpdate"]
   ;
 
@@ -70,6 +91,9 @@ function reducer(oldState: AppState, [action, arg]: Action): AppState {
     case "setInput":
       state = { ...oldState, input: arg };
       break;
+    case "applyPreset":
+      state = { ...oldState, pattern: arg.pattern, input: arg.input, options: arg.options };
+      break;
     case "forceUpdate":
       state = { ...oldState };
       break;
@@ -77,7 +101,7 @@ function reducer(oldState: AppState, [action, arg]: Action): AppState {
 
   const viewModel = state.viewModel.value;
   if (viewModel) {
-    if (action == "init" || action === "setPattern" || action === "setOptions") {
+    if (action == "init" || action === "setPattern" || action === "setOptions" || action === "applyPreset") {
       viewModel.updateRegex(state.pattern, state.options, state.input);
     } else if (action === "setInput") {
       viewModel.updateInput(state.input);
@@ -88,8 +112,8 @@ function reducer(oldState: AppState, [action, arg]: Action): AppState {
 }
 
 const initialState: AppState = {
-  pattern: defaultPattern,
-  input: defaultInput,
+  pattern: "",
+  input: "",
   options: DEFAULT_OPTIONS,
   viewModel: { loading: true },
 };
@@ -114,6 +138,19 @@ export function App() {
 
   return (
     <main>
+      <section class="presets">
+        <span class="presets-label">Presets:</span>
+        <div class="presets-buttons">
+          {PRESETS.map((preset) => (
+            <button type="button" class="preset-btn" onClick={() => {
+              dispatch(["applyPreset", preset]);
+            }}>
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section class="inputs">
         <PatternInput
           pattern={state.pattern}

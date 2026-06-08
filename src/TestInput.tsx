@@ -12,7 +12,6 @@ export function TestInput({
       <label for="teststr">Test string</label>
       <textarea
         id="teststr"
-        rows={6}
         spellcheck={false}
         placeholder="Enter text to test"
         value={input}

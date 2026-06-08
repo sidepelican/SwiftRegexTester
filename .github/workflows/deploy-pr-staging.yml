@@ -32,6 +32,7 @@ jobs:
       - id: install-swift-sdk
         uses: swiftwasm/setup-swiftwasm@v2
         with:
+          tag: "swift-6.3-RELEASE"
           target: "wasm32-unknown-wasip1-threads"
 
       - name: Build Swift/Wasm bundle

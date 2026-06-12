@@ -30,12 +30,22 @@ jobs:
           fetch-depth: 0
 
       - uses: vapor/swiftly-action@v0.2
-        with:
-          toolchain: 6.3.0
-      - run: swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.3-RELEASE/swift-wasm-6.3-RELEASE-wasm32-unknown-wasip1-threads.artifactbundle.zip --checksum a09a0eed0fef420b4b8bb03e4dc0e7e2653ab6c88b44cb4f359ef06063b35c39
+      - run: |
+          swiftly install --assume-yes --use --post-install-file "${HOME}/.swiftly-postinstall-cmds.sh"
+          if [[ -f "${HOME}/.swiftly-postinstall-cmds.sh" ]]; then
+            if [[ "$(id -un)" == 'root' ]]; then
+              env DEBIAN_FRONTEND=noninteractive bash "${HOME}/.swiftly-postinstall-cmds.sh"
+            else
+              sudo env DEBIAN_FRONTEND=noninteractive bash "${HOME}/.swiftly-postinstall-cmds.sh" # use the current value of HOME, not root's
+            fi
+            rm "${HOME}/.swiftly-postinstall-cmds.sh"
+          fi
+      - name: Install Swift WebAssembly SDK
+        id: setup-sdk
+        run: ./setup-swift-sdk.sh
 
       - name: Build Swift/Wasm bundle
-        run: swiftly run swift package --swift-sdk 6.3-RELEASE-wasm32-unknown-wasip1-threads js -c release
+        run: swiftly run swift package --swift-sdk ${{ steps.setup-sdk.outputs.SWIFT_SDK_ID }} js -c release
 
       - name: Install dependencies
         run: npm ci

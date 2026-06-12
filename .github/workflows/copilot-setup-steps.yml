@@ -19,13 +19,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - uses: vapor/swiftly-action@v0.2
+      - run: swiftly install
       - name: Install Swift WebAssembly SDK
-        run: |
-          set -euo pipefail
-          version="$(swift --version | sed -n 's/^Swift version \([0-9.]*\).*/\1/p')"
-          tag="swift-${version}-RELEASE"
-          url="https://download.swift.org/swift-${version}-release/wasm-sdk/${tag}/${tag}_wasm.artifactbundle.tar.gz"
-          archive="$(mktemp)"
-          curl -fsSL "$url" -o "$archive"
-          swift sdk install "$archive"
-          rm -f "$archive"
+        id: setup-sdk
+        run: ./setup-swift-sdk.sh

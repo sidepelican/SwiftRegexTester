@@ -30,7 +30,16 @@ jobs:
           fetch-depth: 0
 
       - uses: vapor/swiftly-action@v0.2
-      - run: swiftly install
+      - run: |
+          swiftly install --assume-yes --use --post-install-file "${HOME}/.swiftly-postinstall-cmds.sh"
+          if [[ -f "${HOME}/.swiftly-postinstall-cmds.sh" ]]; then
+            if [[ "$(id -un)" == 'root' ]]; then
+              env DEBIAN_FRONTEND=noninteractive bash "${HOME}/.swiftly-postinstall-cmds.sh"
+            else
+              sudo env DEBIAN_FRONTEND=noninteractive bash "${HOME}/.swiftly-postinstall-cmds.sh" # use the current value of HOME, not root's
+            fi
+            rm "${HOME}/.swiftly-postinstall-cmds.sh"
+          fi
       - name: Install Swift WebAssembly SDK
         id: setup-sdk
         run: ./setup-swift-sdk.sh
